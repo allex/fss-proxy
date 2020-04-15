@@ -1,4 +1,4 @@
-FROM nginx_base:latest
+FROM nginx:base
 
 LABEL version="1.0" \
       maintainer="allex_wang <allex.wxn@gmail.com>" \
@@ -14,7 +14,7 @@ RUN webroot=/var/www \
       && mkdir -p ${webroot}/ \
       && chmod +x /sbin/fss-proxy.sh
 
-VOLUME ["/var/cache/nginx"]
+VOLUME ["/var/cache/nginx","/var/www"]
 
 EXPOSE 80
 ENTRYPOINT ["/sbin/fss-proxy.sh"]

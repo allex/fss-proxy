@@ -3,7 +3,7 @@
 
 # ================================================
 # Description: fss-proxy bootstrap
-# Last Modified: Wed Apr 01, 2020 10:46
+# Last Modified: Wed Apr 15, 2020 22:55
 # Author: Allex Wang (allex.wxn@gmail.com)
 # ================================================
 
@@ -23,4 +23,4 @@ vars=`cat "$cfile" |grep '${FSS_.*}' |sed 's/.*\(${FSS_.*}\).*/\1/g'`
 
 envsubst "${vars}" < $cfile > $cfile.tmp \
   && mv $cfile.tmp $cfile \
-  && nginx
+  && nginx -g 'daemon off;'
