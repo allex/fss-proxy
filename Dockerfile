@@ -1,8 +1,10 @@
 FROM nginx:base
 
-LABEL version="1.0" \
+ARG ARG_BUILD_NO=1.0
+
+LABEL version="${ARG_BUILD_NO}" \
       maintainer="allex_wang <allex.wxn@gmail.com>" \
-      description="Base image for FE and Backend development integration"
+      description="Base image for FE development integration"
 
 ENV FSS_PROXY=127.0.0.1:8081
 ENV FSS_UPSTREAM=
