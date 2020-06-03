@@ -6,9 +6,10 @@ LABEL version="${ARG_BUILD_NO}" \
       maintainer="allex_wang <allex.wxn@gmail.com>" \
       description="Base image for FE development integration"
 
-ENV FSS_PROXY=127.0.0.1:8081
+ENV FSS_PROXY=
 ENV FSS_UPSTREAM=
 
+ADD .env /
 ADD ./nginx /etc/nginx
 ADD ./fss-proxy.sh /sbin/
 
