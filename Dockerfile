@@ -7,7 +7,6 @@ LABEL version="${ARG_BUILD_NO}" \
       description="Base image for FE development integration"
 
 ENV FSS_PROXY=
-ENV FSS_UPSTREAM=
 
 ADD .env /
 ADD ./nginx /etc/nginx
@@ -19,5 +18,5 @@ RUN webroot=/var/www \
 
 VOLUME ["/var/cache/nginx","/var/www"]
 
-EXPOSE 80
+EXPOSE 2881
 ENTRYPOINT ["/sbin/fss-proxy.sh"]
