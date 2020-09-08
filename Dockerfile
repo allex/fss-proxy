@@ -20,5 +20,7 @@ RUN webroot=/var/www \
 
 VOLUME ["/var/cache/nginx","/var/www"]
 
+# may be changed by custom port env ${FSS_PORT}
 EXPOSE 80
+
 ENTRYPOINT ["/sbin/fss-proxy.sh"]
