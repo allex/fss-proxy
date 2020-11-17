@@ -3,22 +3,17 @@
 
 # ================================================
 # Description: fss-proxy bootstrap
-# Last Modified: Wed Jun 03, 2020 18:53
+# Last Modified: Wed Nov 25, 2020 14:16
 # Author: Allex Wang (allex.wxn@gmail.com)
 # ================================================
 
-if [ -f /.env ]; then
-  . /.env
-fi
-
-ec=$?
-[ $ec -eq 0 ] || { exit $ec; }
-
-cfile=/etc/nginx/conf.d/default.conf
-vars=`cat "$cfile" |grep '${FSS_.*}' |sed 's/.*\(${FSS_.*}\).*/\1/g'`
+[ -f /.env ] && { set -a; source /.env; set +a; } || { exit $?; }
 
 echo >&2 "start fss-proxy at port ${FSS_PORT} ..."
 
-envsubst "${vars}" < $cfile > $cfile.tmp \
-  && mv $cfile.tmp $cfile \
+ngxfile=/etc/nginx/conf.d/default.conf
+vars=`envsubst --variables "$(cat $ngxfile)" |sort |uniq |awk '/^[A-Z0-9\d_]+$/{print "${"$1"}"}'`
+
+envsubst "${vars}" < $ngxfile > $ngxfile.tmp \
+  && mv $ngxfile.tmp $ngxfile \
   && nginx -g 'daemon off;'

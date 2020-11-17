@@ -1,26 +1,28 @@
-FROM nginx:base
+FROM tdio/nginx:base
 
-ARG ARG_BUILD_NO=1.0
+ARG BUILD_TAG
+ARG BUILD_GIT_HEAD
 
-LABEL version="${ARG_BUILD_NO}" \
-      maintainer="allex_wang <allex.wxn@gmail.com>" \
-      description="Base image for FE development integration"
+# Base image for fss-proxy and variant distributions
+LABEL version="${BUILD_TAG}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
 
+ENV BUILD_GIT_HEAD=${BUILD_GIT_HEAD}
+
+# default ngx expose port
+ENV FSS_PORT=80
 ENV FSS_PROXY=127.0
 ENV FSS_UPSTREAM=127.0.0.1:8709
 
-ADD .env /
-ADD ./nginx /etc/nginx
-ADD ./fss-proxy.sh /sbin/
+ONBUILD ARG BUILD_TAG
+ONBUILD ARG BUILD_GIT_HEAD
+ONBUILD ENV BUILD_TAG=${BUILD_TAG}
+ONBUILD ENV BUILD_GIT_HEAD=${BUILD_GIT_HEAD}
 
+ADD @root /
 RUN webroot=/var/www \
-      && apk add --no-cache curl \
-      && mkdir -p ${webroot}/ \
-      && chmod +x /sbin/fss-proxy.sh
+  && mkdir -p ${webroot}/ && cp -s /usr/share/nginx/html/* ${webroot} \
+  && chmod +x /sbin/fss-proxy.sh
 
 VOLUME ["/var/cache/nginx","/var/www"]
-
-# may be changed by custom port env ${FSS_PORT}
-EXPOSE 80
 
 ENTRYPOINT ["/sbin/fss-proxy.sh"]
