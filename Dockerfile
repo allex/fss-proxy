@@ -1,4 +1,4 @@
-FROM tdio/nginx:base
+FROM tdio/nginx:2
 
 ARG BUILD_TAG
 ARG BUILD_GIT_HEAD

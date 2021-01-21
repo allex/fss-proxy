@@ -32,5 +32,5 @@ target "2.x" {
     "${image_name(PREFIX, NAME)}:latest",
     "${image_name(PREFIX, NAME)}:${BUILD_TAG}"
   ]
-  platforms = ["linux/amd64"]
+  platforms = ["linux/amd64","linux/arm64"]
 }
