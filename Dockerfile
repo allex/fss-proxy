@@ -13,14 +13,9 @@ ENV FSS_PORT=80
 ENV FSS_PROXY=127.0
 ENV FSS_UPSTREAM=127.0.0.1:8709
 
-ONBUILD ARG BUILD_TAG
-ONBUILD ARG BUILD_GIT_HEAD
-ONBUILD ENV BUILD_TAG=${BUILD_TAG}
-ONBUILD ENV BUILD_GIT_HEAD=${BUILD_GIT_HEAD}
-
 ADD @root /
 RUN webroot=/var/www \
-  && mkdir -p ${webroot}/ && cp -s /usr/share/nginx/html/* ${webroot} \
+  && mkdir -p ${webroot}/ \
   && chmod +x /sbin/fss-proxy.sh
 
 VOLUME ["/var/cache/nginx","/var/www"]
