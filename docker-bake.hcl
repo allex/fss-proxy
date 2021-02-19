@@ -14,14 +14,14 @@ variable "PREFIX" {
 }
 
 variable "BUILD_TAG" {
-  default = "2.0.0"
+  default = ""
 }
 
 group "default" {
-  targets = ["2.x"]
+  targets = ["mainline"]
 }
 
-target "2.x" {
+target "mainline" {
   context = "."
   dockerfile = "Dockerfile"
   args = {

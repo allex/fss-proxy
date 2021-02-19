@@ -1,15 +1,27 @@
-BUILD_TAG := $(shell git-rev)
+comma := ,
+ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+BUILD_TAG = 1.0
 BUILD_GIT_HEAD := $(shell git rev-parse HEAD)
-DOCKER_BUILD_ARGS := --set *.args.BUILD_TAG=$(BUILD_TAG) --set *.args.BUILD_GIT_HEAD=$(BUILD_GIT_HEAD)
+VERSION = $(ROOT_DIR)/.version
 
 .DEFAULT_GOAL := build
 
-push:
-	export BUILD_TAG=$(BUILD_TAG) \
-	  && docker buildx bake $(DOCKER_BUILD_ARGS) --push
+buildx = export BUILD_TAG=$(BUILD_TAG) && docker buildx bake --set *.args.BUILD_TAG=$(BUILD_TAG) --set *.args.BUILD_GIT_HEAD=$(BUILD_GIT_HEAD) $(1)
 
-build:
-	export BUILD_TAG=$(BUILD_TAG) \
-	  && docker buildx bake $(DOCKER_BUILD_ARGS) --load
+.version:
+	@read -p "Enter the publishing image version: " v; \
+  echo "The publish version is $$v"; \
+  echo $$v > $(VERSION);
+
+  BUILD_TAG = $(shell cat .version)
+
+push: .version
+	$(call buildx,--push)
+
+build: .version
+	$(call buildx,--set=*.output=type=image$(comma)push=false)
+
+clean:
+	rm -f $(VERSION)
 
 .PHONY: build
