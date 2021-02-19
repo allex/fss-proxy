@@ -6,7 +6,7 @@ function image_name {
 }
 
 variable "NAME" {
-  default = "cmp-ui-base"
+  default = "fss-proxy"
 }
 
 variable "PREFIX" {
@@ -29,7 +29,6 @@ target "mainline" {
     BUILD_GIT_HEAD = ""
   }
   tags = [
-    "${image_name(PREFIX, NAME)}:latest",
     "${image_name(PREFIX, NAME)}:${BUILD_TAG}"
   ]
   platforms = ["linux/amd64","linux/arm64"]
