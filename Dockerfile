@@ -1,4 +1,4 @@
-FROM nginx:base
+FROM tdio/nginx:base
 
 ARG ARG_BUILD_NO=1.0
 
