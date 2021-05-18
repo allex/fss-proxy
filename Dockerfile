@@ -18,11 +18,11 @@ ONBUILD ARG BUILD_GIT_HEAD
 ONBUILD ENV BUILD_TAG=${BUILD_TAG}
 ONBUILD ENV BUILD_GIT_HEAD=${BUILD_GIT_HEAD}
 
-ADD @root /
+ADD init.d /
 RUN webroot=/var/www \
   && mkdir -p ${webroot}/ && cp -s /usr/share/nginx/html/* ${webroot} \
   && chmod +x /sbin/fss-proxy.sh
 
-VOLUME ["/var/cache/nginx","/var/www"]
+VOLUME ["/var/cache/nginx"]
 
 ENTRYPOINT ["/sbin/fss-proxy.sh"]
