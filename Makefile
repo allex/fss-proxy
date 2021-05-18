@@ -8,17 +8,17 @@ VERSION = $(ROOT_DIR)/.version
 
 buildx = export BUILD_TAG=$(BUILD_TAG) && docker buildx bake --set *.args.BUILD_TAG=$(BUILD_TAG) --set *.args.BUILD_GIT_HEAD=$(BUILD_GIT_HEAD) $(1)
 
-.version:
+$(VERSION):
 	@read -p "Enter the publishing image version: " v; \
   echo "The publish version is $$v"; \
   echo $$v > $(VERSION);
 
-  BUILD_TAG = $(shell cat .version)
+  BUILD_TAG = $(shell cat $(VERSION))
 
-push: .version
+push: $(VERSION)
 	$(call buildx,--push)
 
-build: .version
+build: $(VERSION)
 	$(call buildx,--set=*.output=type=image$(comma)push=false)
 
 clean:
