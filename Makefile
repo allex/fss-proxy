@@ -1,27 +1,55 @@
-comma := ,
+# Makefile for build fss-proxy
+# by allex_wang
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-BUILD_VERSION = 1.0
-BUILD_GIT_HEAD := $(shell git rev-parse HEAD)
-VERSION = $(ROOT_DIR)/.version
+
+platform ?= linux/amd64,linux/arm64
+prefix ?= tdio
+
+ifndef prefix
+	$(error prefix not valid)
+endif
+
+IMAGE_NAME = $(prefix)/fss-proxy
+
+ifneq ("$(wildcard .version)","")
+	BUILD_VERSION := $(shell cat .version)
+endif
 
 .DEFAULT_GOAL := build
 
-buildx = export BUILD_VERSION=$(BUILD_VERSION) && docker buildx bake --set *.args.BUILD_VERSION=$(BUILD_VERSION) --set *.args.BUILD_GIT_HEAD=$(BUILD_GIT_HEAD) $(1)
+docker-build = \
+	export PREFIX=$(prefix); \
+	export BUILD_VERSION=$(BUILD_VERSION); \
+	docker buildx bake $(1)
 
-$(VERSION):
-	@read -p "Enter the publishing image version: " v; \
-  echo "The publish version is $$v"; \
-  echo $$v > $(VERSION);
+# enable push mode: > make push=1 build
+docker-build-args = \
+	--set *.args.BUILD_VERSION=$(BUILD_VERSION) \
+	--set *.args.BUILD_GIT_HEAD=$(shell git rev-parse HEAD) \
+	--set *.platform=$(platform) \
+	$(if $(push),--push,--load)
 
-  BUILD_VERSION = $(shell cat $(VERSION))
+get-image-name = \
+	$(IMAGE_NAME):$(BUILD_VERSION)
 
-push: $(VERSION)
-	$(call buildx,--push)
+.version:
+	@echo $(BUILD_VERSION) > .version
 
-build: $(VERSION)
-	$(call buildx,--set=*.output=type=image$(comma)push=false)
+version:
+	@read -p "Enter a new version: ${BUILD_VERSION:+ (current: ${BUILD_VERSION})}" v; \
+	if [ "$$v" ]; then \
+		echo "The publish version is: $$v"; \
+		echo $$v > $(ROOT_DIR)/.version; \
+	fi
+
+build: .version
+ifndef BUILD_VERSION
+	$(error "'BUILD_VERSION' not defined, run 'make version' first")
+endif
+	$(call docker-build, $(docker-build-args))
 
 clean:
-	rm -f $(VERSION)
+	rm -f .version
+	docker rmi -f $(get-image-name)
 
 .PHONY: build

@@ -29,6 +29,7 @@ target "mainline" {
     BUILD_GIT_HEAD = ""
   }
   tags = [
+    "${image_name(PREFIX, NAME)}:latest",
     "${image_name(PREFIX, NAME)}:${BUILD_VERSION}"
   ]
   platforms = ["linux/amd64","linux/arm64"]
