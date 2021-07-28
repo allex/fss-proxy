@@ -19,3 +19,22 @@ $ docker run --name xx --rm --net host \
      -e FSS_UPSTREAM=192.168.0.10:8709,192.168.0.11:8709 \
      -d tdio/cmp-ui-base:2.0.0
 ```
+
+### Use as base image
+
+```sh
+# build a Dockerfile
+
+$ cat <<'EOF' >Dockerfile.test
+FROM tdio/cmp-ui-base:latest
+
+ADD ./dist.tgz /var/www/
+EOF
+
+# build with some builtin args
+
+$ docker build --no-cache \
+  -t cmp-ui:2.4.1 \
+  --build-arg BUILD_VERSION=2.4.1 --build-arg BUILD_GIT_HEAD=10a3720f8de3fc7e0c2cbb6d16a9e2a72d603401 \
+  -f ./Dockerfile.test .
+```

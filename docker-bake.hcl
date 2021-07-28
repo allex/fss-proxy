@@ -5,7 +5,7 @@ function image_name {
   result = notequal("", prefix) ? "${prefix}/${name}" : "${name}"
 }
 
-variable "NAME" {
+variable "IMAGE_NAME" {
   default = "cmp-ui-base"
 }
 
@@ -13,7 +13,7 @@ variable "PREFIX" {
   default = "docker.io/tdio"
 }
 
-variable "BUILD_TAG" {
+variable "BUILD_VERSION" {
   default = ""
 }
 
@@ -25,12 +25,12 @@ target "mainline" {
   context = "."
   dockerfile = "Dockerfile"
   args = {
-    BUILD_TAG = ""
+    BUILD_VERSION = ""
     BUILD_GIT_HEAD = ""
   }
   tags = [
-    "${image_name(PREFIX, NAME)}:latest",
-    "${image_name(PREFIX, NAME)}:${BUILD_TAG}"
+    "${image_name(PREFIX, IMAGE_NAME)}:latest",
+    "${image_name(PREFIX, IMAGE_NAME)}:${BUILD_VERSION}"
   ]
   platforms = ["linux/amd64","linux/arm64"]
 }
