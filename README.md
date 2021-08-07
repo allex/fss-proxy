@@ -12,7 +12,7 @@ $ docker run --name cmp-ui --net host -v /local/www:/var/www -v /local/etc/nginx
 
 * **FSS_PORT** - Nginx port to listen, Defaults to `80`
 * **FSS_UPSTREAM** - Proxy to upsteam to router overload: `/api/*`, Defaults to `127.0.0.1:8709`
-* **FSS_SPA** - Enable to Fallback to /index.html for Single Page Applications.
+* **FSS_SPA** - [0, 1], Enable to Fallback to /index.html for Single Page Applications.
 
 ```
 $ docker run --rm --net host \
