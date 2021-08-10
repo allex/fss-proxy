@@ -9,7 +9,7 @@ ifndef prefix
 	$(error prefix not valid)
 endif
 
-IMAGE_NAME = $(prefix)/fss-proxy
+IMAGE_NAME = fss-proxy
 
 ifneq ("$(wildcard .version)","")
 	BUILD_VERSION := $(shell cat .version)
@@ -19,6 +19,7 @@ endif
 
 docker-build = \
 	export PREFIX=$(prefix); \
+	export IMAGE_NAME=$(IMAGE_NAME); \
 	export BUILD_VERSION=$(BUILD_VERSION); \
 	docker buildx bake $(1)
 
@@ -30,7 +31,7 @@ docker-build-args = \
 	$(if $(push),--push,--load)
 
 get-image-name = \
-	$(IMAGE_NAME):$(BUILD_VERSION)
+	$(prefix)/$(IMAGE_NAME):$(BUILD_VERSION)
 
 .version:
 	@echo $(BUILD_VERSION) > .version

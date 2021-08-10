@@ -5,10 +5,7 @@ ARG BUILD_VERSION
 ARG BUILD_GIT_HEAD
 
 # Base image for fss-proxy and variant distributions
-LABEL version="${BUILD_VERSION}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
-
-ENV BUILD_VERSION=${BUILD_VERSION}
-ENV BUILD_GIT_HEAD=${BUILD_GIT_HEAD}
+LABEL version="${BUILD_VERSION}" baseref="${BUILD_GIT_HEAD}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
 
 # default ngx expose port
 ENV FSS_PORT=80
