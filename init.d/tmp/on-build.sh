@@ -3,7 +3,7 @@
 
 # ================================================
 # Description: on-build for steamer-ui-base builder
-# Last Modified: Tue May 18, 2021 23:01
+# Last Modified: Mon Sep 06, 2021 14:02
 # Author: Allex Wang (allex.wxn@gmail.com)
 # ================================================
 set -eu
@@ -17,7 +17,7 @@ trap "[ -f '$sf' ] && rm -f -- '$sf'" 0 1 2 3 9 13 15
 
   cd /var/www
   if [ -f ./index.html ]; then
-    echo "<!-- v${BUILD_VERSION##v} | ${BUILD_GIT_HEAD} -->" >> ./index.html
+    echo "<!-- ${BUILD_VERSION##v} | ${BUILD_GIT_HEAD} -->" >> ./index.html
   fi
 )
 
