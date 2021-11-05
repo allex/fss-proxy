@@ -1,4 +1,4 @@
-FROM tdio/nginx:2
+FROM tdio/nginx:1.21-alpine
 FROM scratch
 
 ARG BUILD_VERSION
