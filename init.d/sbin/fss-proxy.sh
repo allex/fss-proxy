@@ -4,15 +4,13 @@
 # ================================================
 # Description: fss-proxy bootstrap entrypoint
 # Author: @allex_wang (allex.wxn@gmail.com)
-# Last Modified: Tue Nov 09, 2021 13:36
+# Last Modified: Wed Nov 10, 2021 17:17
 # ================================================
-
 set -e
+
 [ "${VERBOSE:-}" = "true" ] && set -x
 
 echo "FSS-Proxy $FSS_VERSION (based on nginx $NGINX_VERSION, envgod 1.0.0)"
-
-NGX_FILE=/etc/nginx/conf.d/default.conf
 
 # shellcheck disable=SC1091
 [ -f /.env ] && {
@@ -21,10 +19,11 @@ NGX_FILE=/etc/nginx/conf.d/default.conf
   set +a
 }
 
-# `PATCH_FILE` was deprecated since 1.1.4, use `PATCH_ENTRYPOINT` instead
+# `PATCH_FILE` is deprecated since 1.1.4, use `PATCH_ENTRYPOINT` instead
 if [ -n "$PATCH_FILE" ]; then
-  echo >&2 "'PATCH_FILE' was deprecated since v1.1.6, use 'PATCH_ENTRYPOINT' instead"
+  echo >&2 "warning: 'PATCH_FILE' is deprecated since v1.1.6, use 'PATCH_ENTRYPOINT' instead"
 fi
+
 PATCH_ENTRYPOINT="${PATCH_ENTRYPOINT:-${PATCH_FILE:-}}"
 
 # Execute patch script optionally
@@ -33,12 +32,28 @@ if [ -f "$PATCH_ENTRYPOINT" ]; then
   $PATCH_ENTRYPOINT
 fi
 
-# Evaluate ngx config template with envs
-envgod <"$NGX_FILE" | sed "/^ *$/d" >"$NGX_FILE".tmp && mv "$NGX_FILE".tmp "$NGX_FILE"
+if [ $# -eq 0 ]; then
+  FSS_CONF_DIR=/etc/fss-proxy.d/
 
-if [ $# -gt 0 ]; then
-  exec "$@"
-else
-  echo >&2 "Start server at port ${FSS_PORT} ..."
-  nginx -g 'daemon off;'
+  # been used for shell scripts in /etc/fss-prox.d/
+  exec 3>&1
+
+  find "$FSS_CONF_DIR" -follow -type f -print | sort -V | while read -r f; do
+    case "$f" in
+      *.sh)
+        if [ -x "$f" ]; then
+          "$f"
+        else
+          # warn on shell scripts without exec bit
+          echo >&2 "Ignoring $f, not executable";
+        fi
+        ;;
+      *) echo >&2 "Ignoring $f";;
+    esac
+  done
+
+  echo >&2 "Ready to start up at port ${FSS_PORT} ..."
+  eval set -- "nginx -g 'daemon off;'"
 fi
+
+exec "$@"

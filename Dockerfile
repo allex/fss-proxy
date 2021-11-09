@@ -1,5 +1,9 @@
 # syntax = docker/dockerfile:1.3-labs
 FROM tdio/nginx:1.21-alpine
+RUN <<'eot'
+  rm -rf /docker-entrypoint.d /docker-entrypoint.sh
+eot
+
 FROM scratch
 
 ARG BUILD_VERSION
@@ -11,7 +15,6 @@ LABEL fss_proxy.version="${BUILD_VERSION}" fss_proxy.baseref="${BUILD_GIT_HEAD}"
 ENV NGINX_VERSION=1.21.3 FSS_VERSION=${BUILD_VERSION} FSS_PORT=80 FSS_PROXY= FSS_UPSTREAM=127.0.0.1:8709 FSS_SPA=1
 
 COPY --from=0 / /
-COPY --from=tdio/envgod:latest /envgod /sbin/
 
 ADD init.d /
 RUN <<'eot'
@@ -30,11 +33,8 @@ ONBUILD ARG WWW_DIST=./dist.tgz
 ONBUILD ENV BUILD_GIT_HEAD=${BUILD_GIT_HEAD} BUILD_VERSION="${BUILD_VERSION}"
 ONBUILD LABEL version="${BUILD_VERSION}" gitref="${BUILD_GIT_HEAD}"
 ONBUILD ADD --chown=nginx:nginx ${WWW_DIST} /var/www/
-ONBUILD RUN set -x; ( \
-    [ "${VERBOSE:-}" = "true" ] && { set -x; printenv | sort; } \
-    [ -z "${BUILD_VERSION}" ] && { echo >&2 '${BUILD_VERSION} required'; exit 1; } \
-    cd /var/www \
-    if [ -f ./index.html ]; then \
-      echo "<!-- ${BUILD_VERSION##v} | ${BUILD_GIT_HEAD} -->" >> ./index.html \
-    fi \
-  )
+ONBUILD RUN set -e \
+          && (if [ "${VERBOSE:-}" = "true" ]; then set -x; printenv | sort; fi) \
+          && ([ -n "${BUILD_VERSION}" ] || { echo >&2 'fatal: "${BUILD_VERSION}" is required.'; exit 1; }) \
+          && cd /var/www \
+          && (if [ -f ./index.html ]; then echo "<!-- ${BUILD_VERSION##v} | ${BUILD_GIT_HEAD} -->" >> ./index.html; fi)
