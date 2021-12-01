@@ -37,4 +37,4 @@ ONBUILD RUN set -e \
           && (if [ "${VERBOSE:-}" = "true" ]; then set -x; printenv | sort; fi) \
           && ([ -n "${BUILD_VERSION}" ] || { echo >&2 'fatal: "${BUILD_VERSION}" is required.'; exit 1; }) \
           && cd /var/www \
-          && (if [ -f ./index.html ]; then echo "<!-- ${BUILD_VERSION##v} | ${BUILD_GIT_HEAD} -->" >> ./index.html; fi)
+          && (if [ -f ./index.html ]; then echo "<!-- ${BUILD_VERSION##v} | ${BUILD_GIT_HEAD:-$(date +"%x %r")} -->" >> ./index.html; fi)
