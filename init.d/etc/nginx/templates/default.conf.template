@@ -30,7 +30,7 @@ server {
     {{if eq .FSS_SPA "1"}}try_files $resource_path @fallback;
     {{else}}try_files $uri $uri/ @fallback;{{end}}
     expires 30s;
-    add_header Content-Security-Policy "script-src 'self' 'unsafe-eval' 'unsafe-inline'; object-src 'none';";
+    add_header Content-Security-Policy "script-src 'self' https://* http://* 'unsafe-eval' 'unsafe-inline'; object-src 'none';";
     add_header X-Frame-Options SAMEORIGIN;
     add_header X-XSS-Protection "1; mode=block";
     add_header X-Origin-Server $hostname;
