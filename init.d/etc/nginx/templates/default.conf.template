@@ -51,7 +51,7 @@ server {
     {{if .BUILD_VERSION}}add_header Build-Ver "{{.BUILD_VERSION}}";{{end}}
   }
 
-  location ^~ /api/ { try_files $uri @$http_upgrade; }
+  location ^~ {{.FSS_API_BASE}} { try_files $uri @$http_upgrade; }
   location ^~ /svc/ { try_files $uri @$http_upgrade; }
 
   location @websocket {
@@ -77,5 +77,5 @@ server {
 
 map $uri $api_endpoint {
   ~^/svc/.* $uri;
-  ~^/api/(.*) /$1;
+  ~^{{.FSS_API_BASE}}(.*) /$1;
 }
