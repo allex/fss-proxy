@@ -21,6 +21,7 @@ ENV FSS_UPSTREAM=127.0.0.1:8709
 
 # api base for location tilde modifier (^~)
 ENV FSS_API_BASE=/api/
+ENV FSS_REWRITE_API=1
 
 COPY --from=0 / /
 
