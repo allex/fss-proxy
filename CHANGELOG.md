@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.10](https://github.com/allex/cmp-ui-base/compare/1.1.9...1.1.10) (2022-07-12)
+
+
+### Features
+
+* add api rewrite env ${FSS_REWRITE_API} ([4a4ba2f](https://github.com/allex/cmp-ui-base/commit/4a4ba2fea339f52343faace0d0acbb22dc28601f))
+
+
+### Bug Fixes
+
+* allow html resources ([f64e47b](https://github.com/allex/cmp-ui-base/commit/f64e47b153b3d6aeaf650ab1b0a9b7c0a54be951))
+
 ### [1.1.9](https://github.com/allex/fss-proxy/compare/1.1.8...1.1.9) (2022-05-13)
 
 
