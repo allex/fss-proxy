@@ -44,7 +44,7 @@ server {
     {{end}}
   }
 
-  location ~* \.(js|css|eot|woff|woff2|ttf|svg|gif|jpeg|jpg|png|bmp|webp|swf|ico)(\?|$) {
+  location ~* \.(js|css|eot|woff|woff2|ttf|svg|gif|jpeg|jpg|png|bmp|webp|swf|ico|mp4|ogg|ogv|ogm|webm)(\?|$) {
     try_files $uri @fallback;
     expires 30d;
     include static_header_set.conf;
