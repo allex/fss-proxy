@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.11](https://github.com/allex/cmp-ui-base/compare/1.1.10...1.1.11) (2022-08-02)
+
+
+### Features
+
+* add static assets with video files ([72f7d88](https://github.com/allex/cmp-ui-base/commit/72f7d88e8c98301a7c9f72ed4febe978b1979b4d))
+
+
+### Bug Fixes
+
+* add localize files reserve ([716ddd6](https://github.com/allex/cmp-ui-base/commit/716ddd6b37640ca663b038d3e39a3cfac7b8a3b5))
+
 ### [1.1.10](https://github.com/allex/cmp-ui-base/compare/1.1.9...1.1.10) (2022-07-12)
 
 
