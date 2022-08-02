@@ -27,6 +27,7 @@ server {
   set $prefix '';
 
   location / {
+    if (-f $request_filename) { break; }
     {{if eq .FSS_SPA "1"}}try_files $resource_path @fallback;
     {{else}}try_files $uri $uri/ @fallback;{{end}}
     expires 30s;
