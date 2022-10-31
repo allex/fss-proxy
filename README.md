@@ -14,6 +14,9 @@ $ docker run --name cmp-ui --net host -v /local/www:/var/www -v /local/etc/nginx
 * **FSS_PROXY** - Proxy static resource to a upsteam server, should set `FSS_SPA=0` when proxy mode.
 * **FSS_UPSTREAM** - Proxy to upsteam to router overload: `/api/*`, Defaults to `127.0.0.1:8709`
 * **FSS_SPA** - [0, 1], Enable to Fallback to /index.html for Single Page Applications.
+* **FSS_SSL_PORT** - (Optional) set the ssl port to https listen, Defaults to nil
+* **FSS_API_BASE** - (Optional) set the webapp api prefix, Defaults to `/api`
+* **FSS_REWRITE_API** (Optional) rewrite backend service to the specific path (`FSS_API_BASE`), Defaults to "1"
 
 ```
 $ docker run --rm --net host \

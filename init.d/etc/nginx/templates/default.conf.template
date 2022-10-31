@@ -19,6 +19,12 @@ server {
   server_tokens off;
   root /var/www;
 
+  {{if .FSS_SSL_PORT}}
+  listen {{.FSS_SSL_PORT}} ssl http2;
+  ssl_certificate /etc/nginx/ssl/tls.crt;
+  ssl_certificate_key /etc/nginx/ssl/tls.key;
+  {{end}}
+
   {{if eq .FSS_SPA "1"}}
   index index.html;
   rewrite ^/*$ /index.html last;
