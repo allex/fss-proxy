@@ -19,6 +19,12 @@ server {
   server_tokens off;
   root /var/www;
 
+  {{if .FSS_SSL_PORT}}
+  listen {{.FSS_SSL_PORT}} ssl http2;
+  ssl_certificate /etc/nginx/ssl/tls.crt;
+  ssl_certificate_key /etc/nginx/ssl/tls.key;
+  {{end}}
+
   {{if eq .FSS_SPA "1"}}
   index index.html;
   rewrite ^/*$ /index.html last;
@@ -26,16 +32,21 @@ server {
 
   set $prefix '';
 
+  # patch backend cookie samesite flags
+  set $cookie_samesite_conditions "";
+  if ( $http_user_agent ~ "Chrome[^ \/]*\/[189][\d]+[\.\d]*" ) { set $cookie_samesite_conditions "${scheme}_Chrome_Adv"; }
+
   location / {
     if (-f $request_filename) { break; }
-    {{if eq .FSS_SPA "1"}}try_files $resource_path @fallback;
+    {{if eq .FSS_SPA "1"}}try_files $uri $uri/ $resource_path @fallback;
     {{else}}try_files $uri $uri/ @fallback;{{end}}
     expires 30s;
     add_header Content-Security-Policy "script-src 'self' https://* http://* 'unsafe-eval' 'unsafe-inline'; object-src 'none';";
-    add_header X-Frame-Options SAMEORIGIN;
     add_header X-XSS-Protection "1; mode=block";
     add_header X-Origin-Server $hostname;
     {{if .BUILD_VERSION}}add_header Build-Ver "{{.BUILD_VERSION}}";{{end}}
+    add_header Access-Control-Allow-Origin "*";
+    add_header Access-Control-Allow-Methods "POST, GET, OPTIONS";
   }
 
   location @fallback {
@@ -73,7 +84,15 @@ server {
     proxy_intercept_errors on;
     add_header Cache-Control "no-cache, no-store, must-revalidate";
     add_header X-Via "{{.FSS_UPSTREAM}}";
+    proxy_cookie_path / /$x_proxy_cookie_flags;
+    add_header Access-Control-Allow-Origin "*";
+    add_header Access-Control-Allow-Methods "POST, GET, OPTIONS";
   }
+}
+
+map $cookie_samesite_conditions $x_proxy_cookie_flags {
+  default             "";
+  "https_Chrome_Adv"  "; SameSite=None; Secure";
 }
 
 map $uri $api_endpoint {

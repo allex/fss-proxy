@@ -10,11 +10,12 @@ ARG BUILD_VERSION
 ARG BUILD_GIT_HEAD
 
 # Base image for fss-proxy and variant distributions
-LABEL fss_proxy.version="${BUILD_VERSION}" fss_proxy.baseref="${BUILD_GIT_HEAD}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
+LABEL fss-proxy.version="${BUILD_VERSION}" fss-proxy.commit="${BUILD_GIT_HEAD}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
 
 ENV NGINX_VERSION=1.21.3
 ENV FSS_VERSION=${BUILD_VERSION}
 ENV FSS_PORT=80
+ENV FSS_SSL_PORT=
 ENV FSS_SPA=1
 ENV FSS_PROXY=
 ENV FSS_UPSTREAM=127.0.0.1:8709

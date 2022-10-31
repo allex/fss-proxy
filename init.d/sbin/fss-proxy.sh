@@ -4,36 +4,39 @@
 # ================================================
 # Description: fss-proxy bootstrap entrypoint
 # Author: @allex_wang (allex.wxn@gmail.com)
-# Last Modified: Wed Nov 10, 2021 17:17
+# Last Modified: Mon Oct 31, 2022 15:38
 # ================================================
-set -e
+set -eu
 
 [ "${VERBOSE:-}" = "true" ] && set -x
 
-echo "FSS-Proxy $FSS_VERSION (based on nginx $NGINX_VERSION, envgod 1.0.0)"
-
-# shellcheck disable=SC1091
-[ -f /.env ] && {
-  set -a
-  . /.env
-  set +a
-}
-
-# `PATCH_FILE` is deprecated since 1.1.4, use `PATCH_ENTRYPOINT` instead
-if [ -n "$PATCH_FILE" ]; then
-  echo >&2 "warning: 'PATCH_FILE' is deprecated since v1.1.6, use 'PATCH_ENTRYPOINT' instead"
-fi
-
-PATCH_ENTRYPOINT="${PATCH_ENTRYPOINT:-${PATCH_FILE:-}}"
-
-# Execute patch script optionally
-if [ -f "$PATCH_ENTRYPOINT" ]; then
-  chmod +x "$PATCH_ENTRYPOINT"
-  $PATCH_ENTRYPOINT
-fi
+export FSS_CONF_DIR="/etc/fss-proxy.d"
 
 if [ $# -eq 0 ]; then
-  FSS_CONF_DIR=/etc/fss-proxy.d/
+  # shellcheck source=/dev/null
+  . "${FSS_CONF_DIR}/.helpers/functions"
+
+  echo "FSS-Proxy $FSS_VERSION (based on nginx $NGINX_VERSION, envgod $(envgod -v))"
+
+  # shellcheck disable=SC1091
+  [ -f /.env ] && {
+    set -a
+    . /.env
+    set +a
+  }
+
+  # `PATCH_FILE` is deprecated since 1.1.4, use `PATCH_ENTRYPOINT` instead
+  if [ -n "${PATCH_FILE:-}" ]; then
+    echo >&2 "warning: 'PATCH_FILE' is deprecated since v1.1.6, use 'PATCH_ENTRYPOINT' instead"
+  fi
+
+  PATCH_ENTRYPOINT="${PATCH_ENTRYPOINT:-${PATCH_FILE:-}}"
+
+  # Execute patch script optionally
+  if [ -f "$PATCH_ENTRYPOINT" ]; then
+    chmod +x "$PATCH_ENTRYPOINT"
+    $PATCH_ENTRYPOINT
+  fi
 
   # been used for shell scripts in /etc/fss-prox.d/
   exec 3>&1
@@ -48,7 +51,7 @@ if [ $# -eq 0 ]; then
           echo >&2 "Ignoring $f, not executable";
         fi
         ;;
-      *) echo >&2 "Ignoring $f";;
+      *) ;;
     esac
   done
 
