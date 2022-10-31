@@ -1,0 +1,53 @@
+# vim: set ft=sh fdm=marker ts=2 sw=2 sts=2 tw=85 et:
+# by @allex_wang
+
+BOLD="$(tput bold 2>/dev/null || echo '')"
+GREY="$(tput setaf 0 2>/dev/null || echo '')"
+UNDERLINE="$(tput smul 2>/dev/null || echo '')"
+RED="$(tput setaf 1 2>/dev/null || echo '')"
+GREEN="$(tput setaf 2 2>/dev/null || echo '')"
+YELLOW="$(tput setaf 3 2>/dev/null || echo '')"
+BLUE="$(tput setaf 4 2>/dev/null || echo '')"
+MAGENTA="$(tput setaf 5 2>/dev/null || echo '')"
+CYAN="$(tput setaf 6 2>/dev/null || echo '')"
+NO_COLOR="$(tput sgr0 2>/dev/null || echo '')"
+
+info() {
+  printf "${BOLD}${CYAN}>${NO_COLOR} %s\n" "$*"
+}
+
+warn() {
+  printf "${YELLOW}! %s${NO_COLOR}\n" "$*"
+}
+
+error() {
+  printf "${RED}x %s${NO_COLOR}\n" "$*" >&2
+}
+
+success() {
+  printf "${GREEN}✓${NO_COLOR} %s\n" "$*"
+}
+
+die() {
+  [ "${1-}" ] && error "fatal: ${1}"
+  exit "${2-1}"
+}
+
+xcp () {
+  local source target dir
+  source=$1
+  target=$2
+  dir="$(dirname "$target")"
+  mkdir -p "$dir" && cp -af "$source" "$target"
+}
+
+relative_path () {
+  local common path up
+  common=${1%/} path=${2%/}/
+  while test "${path#"$common"/}" = "$path"; do
+    common=${common%/*} up=../$up
+  done
+  path=${up-}${path#"$common"/}; path=${path%/};
+  printf %s "${path:-.}"
+}
+
