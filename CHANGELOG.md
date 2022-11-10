@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.12](https://github.com/allex/cmp-ui-base/compare/1.1.11...1.1.12) (2022-11-10)
+
+
+### Features
+
+* add cookie samesite flags ([9d9800c](https://github.com/allex/cmp-ui-base/commit/9d9800c6272a84c2e81c99134d978c572e8f879f))
+* add ngx header vars: ${FSS_HEADERS_CSP}, ${FSS_HEADERS_XSS_PROTECTION} ([9bf394f](https://github.com/allex/cmp-ui-base/commit/9bf394f2ea4aeec806493e9e2e28e305110626c2))
+* add ssl support (${FSS_SSL_PORT}) ([616ebf0](https://github.com/allex/cmp-ui-base/commit/616ebf0af23b8d56340a3d0dc9432a5697bb3939))
+* optimize entry and add builtin helpers ([d35528b](https://github.com/allex/cmp-ui-base/commit/d35528bd0d4f04dd6a6ef986457a805885b2aef3))
+
+
+### Bug Fixes
+
+* physical uri with auto index ([03c6ab5](https://github.com/allex/cmp-ui-base/commit/03c6ab5a7d654b966383586475579be4c96228e0))
+
 ### [1.1.11](https://github.com/allex/cmp-ui-base/compare/1.1.10...1.1.11) (2022-08-02)
 
 
