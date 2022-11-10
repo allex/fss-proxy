@@ -41,9 +41,9 @@ server {
     {{if eq .FSS_SPA "1"}}try_files $uri $uri/ $resource_path @fallback;
     {{else}}try_files $uri $uri/ @fallback;{{end}}
     expires 30s;
-    add_header Content-Security-Policy "script-src 'self' https://* http://* 'unsafe-eval' 'unsafe-inline'; object-src 'none';";
-    add_header X-XSS-Protection "1; mode=block";
     add_header X-Origin-Server $hostname;
+    {{if .FSS_HEADERS_CSP}}add_header Content-Security-Policy "{{.FSS_HEADERS_CSP}}";{{end}}
+    {{if .FSS_HEADERS_XSS_PROTECTION}}add_header X-XSS-Protection "{{.FSS_HEADERS_XSS_PROTECTION}}";{{end}}
     {{if .BUILD_VERSION}}add_header Build-Ver "{{.BUILD_VERSION}}";{{end}}
     add_header Access-Control-Allow-Origin "*";
     add_header Access-Control-Allow-Methods "POST, GET, OPTIONS";

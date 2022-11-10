@@ -19,6 +19,8 @@ ENV FSS_SSL_PORT=
 ENV FSS_SPA=1
 ENV FSS_PROXY=
 ENV FSS_UPSTREAM=127.0.0.1:8709
+ENV FSS_HEADERS_CSP="script-src 'self' https://* http://* 'unsafe-eval' 'unsafe-inline' blob:; worker-src 'self' 'unsafe-inline' blob:;"
+ENV FSS_HEADERS_XSS_PROTECTION="1; mode=block"
 
 # api base for location tilde modifier (^~)
 ENV FSS_API_BASE=/api/
