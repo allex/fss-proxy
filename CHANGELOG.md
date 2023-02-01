@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.13](https://github.com/allex/cmp-ui-base/compare/1.1.12...1.1.13) (2023-02-01)
+
+
+### Bug Fixes
+
+* allow bind privileged port when non root ([4ec3dc0](https://github.com/allex/cmp-ui-base/commit/f403a4f6becac3c0565508924c0d4c4169467514))
+
 ### [1.1.12](https://github.com/allex/cmp-ui-base/compare/1.1.11...1.1.12) (2022-11-10)
 
 
