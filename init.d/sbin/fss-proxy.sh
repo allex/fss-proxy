@@ -4,18 +4,23 @@
 # ================================================
 # Description: fss-proxy bootstrap entrypoint
 # Author: @allex_wang (allex.wxn@gmail.com)
-# Last Modified: Mon Oct 31, 2022 15:38
+# Last Modified: Thu Feb 02, 2023 14:18
 # ================================================
 set -eu
 
+PROG=$(basename "$0")
+FSS_CONF_DIR="/etc/fss-proxy.d"
+
+# shellcheck source=/dev/null
+. "${FSS_CONF_DIR}/.helpers/functions"
+
 [ "${VERBOSE:-}" = "true" ] && set -x
 
-export FSS_CONF_DIR="/etc/fss-proxy.d"
+if [ "$(id -u)" != "0" ]; then
+  sudo chmod o+w /tmp
+fi
 
 if [ $# -eq 0 ]; then
-  # shellcheck source=/dev/null
-  . "${FSS_CONF_DIR}/.helpers/functions"
-
   echo "FSS-Proxy $FSS_VERSION (based on nginx $NGINX_VERSION, envgod $(envgod -v))"
 
   # shellcheck disable=SC1091
@@ -34,12 +39,17 @@ if [ $# -eq 0 ]; then
 
   # Execute patch script optionally
   if [ -f "$PATCH_ENTRYPOINT" ]; then
-    chmod +x "$PATCH_ENTRYPOINT"
-    $PATCH_ENTRYPOINT
+    if [ "$(id -u)" != "0" ]; then
+      sudo chmod o+w "$(dirname "$PATCH_ENTRYPOINT")" /etc/nginx/
+    fi
+    sh "$PATCH_ENTRYPOINT"
   fi
 
   # been used for shell scripts in /etc/fss-prox.d/
   exec 3>&1
+
+  # export for cross script contexts
+  export FSS_CONF_DIR
 
   find "$FSS_CONF_DIR" -follow -type f -print | sort -V | while read -r f; do
     case "$f" in
@@ -55,7 +65,7 @@ if [ $# -eq 0 ]; then
     esac
   done
 
-  echo >&2 "Ready to start up at port ${FSS_PORT} ..."
+  echo "Trying to launch server at http/${FSS_PORT}${FSS_SSL_PORT:+ https/${FSS_SSL_PORT}} ..."
   eval set -- "nginx -g 'daemon off;'"
 fi
 

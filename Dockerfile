@@ -10,9 +10,11 @@ ARG BUILD_VERSION
 ARG BUILD_GIT_HEAD
 
 # Base image for fss-proxy and variant distributions
-LABEL fss-proxy.version="${BUILD_VERSION}" fss-proxy.commit="${BUILD_GIT_HEAD}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
+LABEL tdio.fss-proxy.version="${BUILD_VERSION}" tdio.fss-proxy.commit="${BUILD_GIT_HEAD}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
 
-ENV NGINX_VERSION=1.21.3
+ENV NGINX_VERSION 1.21.3
+ENV PKG_RELEASE   1
+
 ENV FSS_VERSION=${BUILD_VERSION}
 ENV FSS_PORT=80
 ENV FSS_SSL_PORT=
@@ -29,9 +31,16 @@ ENV FSS_REWRITE_API=1
 COPY --from=0 / /
 
 ADD init.d /
-RUN <<'eot'
-  mkdir -p /var/www
+RUN <<-'eot'
+  apk add --no-cache sudo
+  mkdir -p /var/www /var/patch
+  echo "nginx ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+  chmod 0440 /etc/sudoers
+  touch /var/run/nginx.pid
+  chown nginx.nginx -R /var/www/ /var/cache/nginx/ /var/log/nginx/ /etc/nginx/conf.d/ /var/run/nginx.pid
 eot
+
+USER nginx
 
 EXPOSE ${FSS_PORT}
 VOLUME ["/var/cache/nginx"]
@@ -44,9 +53,10 @@ ONBUILD ARG BUILD_VERSION
 ONBUILD ARG WWW_DIST=./dist.tgz
 ONBUILD ENV BUILD_GIT_HEAD=${BUILD_GIT_HEAD} BUILD_VERSION="${BUILD_VERSION}"
 ONBUILD LABEL version="${BUILD_VERSION}" gitref="${BUILD_GIT_HEAD}"
-ONBUILD ADD --chown=nginx:nginx ${WWW_DIST} /var/www/
+ONBUILD ADD ${WWW_DIST} /var/www/
 ONBUILD RUN set -e \
           && (if [ "${VERBOSE:-}" = "true" ]; then set -x; printenv | sort; fi) \
           && ([ -n "${BUILD_VERSION}" ] || { echo >&2 'fatal: "${BUILD_VERSION}" is required.'; exit 1; }) \
           && cd /var/www \
+          && tar -cf /tmp/t.tar . && sudo rm -rf /var/www/* && tar -xf /tmp/t.tar && rm -rf /tmp/t.tar \
           && (if [ -f ./index.html ]; then echo "<!-- ${BUILD_VERSION##v} | ${BUILD_GIT_HEAD:-$(date +"%x %r")} -->" >> ./index.html; fi)

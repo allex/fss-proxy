@@ -47,6 +47,7 @@ server {
     {{if .BUILD_VERSION}}add_header Build-Ver "{{.BUILD_VERSION}}";{{end}}
     add_header Access-Control-Allow-Origin "*";
     add_header Access-Control-Allow-Methods "POST, GET, OPTIONS";
+    add_header X-Content-Type-Options nosniff;
   }
 
   location @fallback {

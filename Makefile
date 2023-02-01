@@ -29,7 +29,7 @@ docker-build = \
 docker-build-args = \
 	--build-arg BUILD_VERSION=$(BUILD_VERSION) \
 	--build-arg BUILD_GIT_HEAD=$(shell git rev-parse HEAD) \
-	--label "fss-proxy.dist=$(IMAGE_NAME):$(BUILD_VERSION)" \
+	--label "tdio.fss-proxy.dist=$(IMAGE_NAME):$(BUILD_VERSION)" \
 	--platform=$(platform) \
 	$(if $(push),--push,--load)
 
