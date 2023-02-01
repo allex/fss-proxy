@@ -33,6 +33,7 @@ COPY --from=0 / /
 ADD init.d /
 RUN <<-'eot'
   apk add --no-cache sudo
+  apk add --no-cache libcap && setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
   mkdir -p /var/www /var/patch
   echo "nginx ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
   chmod 0440 /etc/sudoers
