@@ -39,8 +39,10 @@ RUN <<-'eot'
   chmod 0440 /etc/sudoers
   touch /var/run/nginx.pid
   chown nginx.nginx -R /var/www/ /var/cache/nginx/ /var/log/nginx/ /etc/nginx/conf.d/ /var/run/nginx.pid
+  rm -rf /tmp && (umask 0; mkdir /tmp)
 eot
 
+WORKDIR /var/www
 USER nginx
 
 EXPOSE ${FSS_PORT}
@@ -51,13 +53,23 @@ ENTRYPOINT ["/sbin/fss-proxy.sh"]
 ONBUILD ARG VERBOSE=0
 ONBUILD ARG BUILD_GIT_HEAD
 ONBUILD ARG BUILD_VERSION
-ONBUILD ARG WWW_DIST=./dist.tgz
 ONBUILD ENV BUILD_GIT_HEAD=${BUILD_GIT_HEAD} BUILD_VERSION="${BUILD_VERSION}"
 ONBUILD LABEL version="${BUILD_VERSION}" gitref="${BUILD_GIT_HEAD}"
-ONBUILD ADD ${WWW_DIST} /var/www/
-ONBUILD RUN set -e \
-          && (if [ "${VERBOSE:-}" = "true" ]; then set -x; printenv | sort; fi) \
-          && ([ -n "${BUILD_VERSION}" ] || { echo >&2 'fatal: "${BUILD_VERSION}" is required.'; exit 1; }) \
-          && cd /var/www \
-          && tar -cf /tmp/t.tar . && sudo rm -rf /var/www/* && tar -xf /tmp/t.tar && rm -rf /tmp/t.tar \
-          && (if [ -f ./index.html ]; then echo "<!-- ${BUILD_VERSION##v} | ${BUILD_GIT_HEAD:-$(date +"%x %r")} -->" >> ./index.html; fi)
+ONBUILD RUN --mount=type=bind,src=/,dst=/tmp/.build set -e \
+          && if [ "${VERBOSE:-}" = "true" ]; then \
+              set -x; printenv | sort; \
+          fi \
+          && if [ -z "${BUILD_VERSION}" ]; then \
+              echo >&2 'fatal: "${BUILD_VERSION}" is required.'; \
+              exit 1; \
+          fi \
+          && dst_file=/tmp/.build/dist.tgz \
+          && if [ -f "$dst_file" ]; then \
+              (cd /var/www; \
+               tar xzf "$dst_file"; \
+               if [ -f ./index.html ]; then \
+                  echo "<!-- ${BUILD_VERSION##v} | ${BUILD_GIT_HEAD:-$(date +"%Y%m%d%H%M%S")} -->" >> ./index.html; \
+               fi \
+              ) \
+          fi \
+          && echo "build complete."
