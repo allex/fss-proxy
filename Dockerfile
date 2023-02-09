@@ -1,8 +1,13 @@
 # syntax = docker/dockerfile:1.3-labs
-FROM tdio/nginx:1.21-alpine
+ARG NGX_VER=1.23.3
+FROM nginx:${NGX_VER}-alpine
+
 RUN <<'eot'
   rm -rf /docker-entrypoint.d /docker-entrypoint.sh
 eot
+
+COPY --from=harbor.tidu.io/tdio/fss-proxy:2.x /etc/nginx/static_header_set.conf /etc/nginx/
+COPY --from=tdio/envgod:latest /envgod /sbin/
 
 FROM scratch
 
@@ -12,7 +17,7 @@ ARG BUILD_GIT_HEAD
 # Base image for fss-proxy and variant distributions
 LABEL tdio.fss-proxy.version="${BUILD_VERSION}" tdio.fss-proxy.commit="${BUILD_GIT_HEAD}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
 
-ENV NGINX_VERSION 1.21.3
+ENV NGINX_VERSION ${NGX_VER}
 ENV PKG_RELEASE   1
 
 ENV FSS_VERSION=${BUILD_VERSION}
@@ -32,6 +37,7 @@ COPY --from=0 / /
 
 ADD init.d /
 RUN <<-'eot'
+  sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
   apk add --no-cache sudo
   apk add --no-cache libcap && setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
   mkdir -p /var/www /var/patch
