@@ -20,6 +20,8 @@ LABEL tdio.fss-proxy.version="${BUILD_VERSION}" tdio.fss-proxy.commit="${BUILD_G
 ENV NGINX_VERSION ${NGX_VER}
 ENV PKG_RELEASE   1
 
+ENV TZ Asia/Shanghai
+
 ENV FSS_VERSION=${BUILD_VERSION}
 ENV FSS_PORT=80
 ENV FSS_SSL_PORT=
