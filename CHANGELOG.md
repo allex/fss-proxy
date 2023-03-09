@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.14](https://github.com/allex/cmp-ui-base/compare/1.1.13...1.1.14) (2023-03-09)
+
+
+### Features
+
+* add log format for upstream ([d6e312d](https://github.com/allex/cmp-ui-base/commit/d6e312d824140b266910c1756670c21e2ae1c740))
+
+
+### Bug Fixes
+
+* change default TZ=Asia/Shanghai ([dd7a52c](https://github.com/allex/cmp-ui-base/commit/dd7a52cc9f0c0022127afade0c788808acc7fb92))
+
 ### [1.1.13](https://github.com/allex/cmp-ui-base/compare/1.1.12...1.1.13) (2023-02-01)
 
 
