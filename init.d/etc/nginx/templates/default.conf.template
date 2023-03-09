@@ -75,16 +75,17 @@ server {
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Host $http_host;
     proxy_set_header X-Real-IP $remote_addr;
-    add_header X-Via "{{.FSS_UPSTREAM}}";
+    add_header X-Via "$upstream_addr";
   }
   location @ {
+    access_log /var/log/nginx/access.log upstream;
     include "proxy_set.conf";
     rewrite ^/(?<p>[^/]+)/.*$ $api_endpoint break;
     proxy_pass http://backend.srv;
     proxy_redirect ~^http://(backend.srv|localhost)/(.*) http://$http_host/${p}/$2;
     proxy_intercept_errors on;
     add_header Cache-Control "no-cache, no-store, must-revalidate";
-    add_header X-Via "{{.FSS_UPSTREAM}}";
+    add_header X-Via "$upstream_addr";
     proxy_cookie_path / /$x_proxy_cookie_flags;
     add_header Access-Control-Allow-Origin "*";
     add_header Access-Control-Allow-Methods "POST, GET, OPTIONS";
