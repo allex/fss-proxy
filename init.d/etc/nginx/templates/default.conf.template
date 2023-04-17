@@ -89,6 +89,7 @@ server {
     proxy_cookie_path / /$x_proxy_cookie_flags;
     add_header Access-Control-Allow-Origin "*";
     add_header Access-Control-Allow-Methods "POST, GET, OPTIONS";
+    add_header Content-Type $api_content_type;
   }
 }
 
@@ -104,4 +105,10 @@ map $uri $api_endpoint {
   {{else}}
   ~^{{.FSS_API_BASE}}.* $uri;
   {{end}}
+}
+
+map $uri $api_content_type {
+  ~\.png$ image/png;
+  ~\.(jpg|jpeg)$ image/jpeg;
+  ~\.(svg|svgz)$ image/svg+xml;
 }
