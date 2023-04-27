@@ -36,6 +36,13 @@ server {
   set $cookie_samesite_conditions "";
   if ( $http_user_agent ~ "Chrome[^ \/]*\/[189][\d]+[\.\d]*" ) { set $cookie_samesite_conditions "${scheme}_Chrome_Adv"; }
 
+  {{if .FSS_VALID_REFERERS}}
+  valid_referers {{.FSS_VALID_REFERERS}};
+  if ($invalid_referer) {
+    return 403;
+  }
+  {{end}}
+
   location / {
     if (-f $request_filename) { break; }
     {{if eq .FSS_SPA "1"}}try_files $uri $uri/ $resource_path @fallback;
@@ -64,8 +71,13 @@ server {
     {{if .BUILD_VERSION}}add_header Build-Ver "{{.BUILD_VERSION}}";{{end}}
   }
 
+  {{if .FSS_API_BASE}}
   location ^~ {{.FSS_API_BASE}} { try_files $uri @$http_upgrade; }
-  location ^~ /svc/ { try_files $uri @$http_upgrade; }
+  {{end}}
+
+  {{if .FSS_SVC_PREFIX}}
+  location ^~ {{.FSS_SVC_PREFIX}} { try_files $uri @$http_upgrade; }
+  {{end}}
 
   location @websocket {
     rewrite ^.*$ $api_endpoint break;
@@ -99,7 +111,7 @@ map $cookie_samesite_conditions $x_proxy_cookie_flags {
 }
 
 map $uri $api_endpoint {
-  ~^/svc/.* $uri;
+  default $uri;
   {{if eq .FSS_REWRITE_API "1"}}
   ~^{{.FSS_API_BASE}}(.*) /$1;
   {{else}}
