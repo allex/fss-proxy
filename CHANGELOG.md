@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.15](https://github.com/allex/cmp-ui-base/compare/1.1.14...1.1.15) (2023-04-27)
+
+
+### Features
+
+* add custom forward prefix, valid_referers ([fd718d1](https://github.com/allex/cmp-ui-base/commit/fd718d1e3df7aa0f61267b70c60fbcd3d99ae107))
+
+
+### Bug Fixes
+
+* api content-type missing ([5dd430f](https://github.com/allex/cmp-ui-base/commit/5dd430f7917038440c432fceb7b1d363915eaab7))
+
 ### [1.1.14](https://github.com/allex/cmp-ui-base/compare/1.1.13...1.1.14) (2023-03-09)
 
 
