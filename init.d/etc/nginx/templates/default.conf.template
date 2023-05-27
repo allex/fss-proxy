@@ -1,17 +1,9 @@
 # fss-proxy default config (by @allex_wang)
 upstream backend.srv {
-{{ $servers := split .FSS_UPSTREAM "," }}{{ range $servers }}
+  {{ $servers := split .FSS_UPSTREAM "," }}{{ range $servers }}
   {{ if . }}server {{.}};{{ end }}
-{{ end }}
+  {{ end }}
 }
-
-{{if .FSS_PROXY}}
-upstream frontend.srv {
-{{ $servers := split .FSS_PROXY "," }}{{ range $servers }}
-  {{ if . }}server {{.}};{{ end }}
-{{ end }}
-}
-{{end}}
 
 server {
   listen {{.FSS_PORT}};
@@ -37,6 +29,7 @@ server {
   if ( $http_user_agent ~ "Chrome[^ \/]*\/[189][\d]+[\.\d]*" ) { set $cookie_samesite_conditions "${scheme}_Chrome_Adv"; }
 
   {{if .FSS_VALID_REFERERS}}
+  # > build valid_referers
   valid_referers {{.FSS_VALID_REFERERS}};
   if ($invalid_referer) {
     return 403;
@@ -45,8 +38,8 @@ server {
 
   location / {
     if (-f $request_filename) { break; }
-    {{if eq .FSS_SPA "1"}}try_files $uri $uri/ $resource_path @fallback;
-    {{else}}try_files $uri $uri/ @fallback;{{end}}
+    {{if eq .FSS_SPA "1"}}try_files $uri $uri/ $resource_path;
+    {{else}}try_files $uri $uri/;{{end}}
     expires 30s;
     add_header X-Origin-Server $hostname;
     {{if .FSS_HEADERS_CSP}}add_header Content-Security-Policy "{{.FSS_HEADERS_CSP}}";{{end}}
@@ -57,15 +50,20 @@ server {
     add_header X-Content-Type-Options nosniff;
   }
 
-  location @fallback {
-    {{if .FSS_PROXY}}
+  {{if .FSS_PROXY}}
+  # > generate proxy configs (start)
+  {{range jsonparse .FSS_PROXY}}
+  location {{.path}} {
     include "proxy_set.conf";
-    proxy_pass http://frontend.srv;
-    {{end}}
+    rewrite ^{{.path}}(.*)$ $1 break;
+    proxy_pass {{.target}};
+    add_header X-Via "$upstream_addr";
   }
+  {{end}}
+  # > generate proxy configs (end)
+  {{end}}
 
   location ~* \.(js|css|eot|woff|woff2|ttf|svg|gif|jpeg|jpg|png|bmp|webp|swf|ico|mp4|ogg|ogv|ogm|webm)(\?|$) {
-    try_files $uri @fallback;
     expires 30d;
     include static_header_set.conf;
     {{if .BUILD_VERSION}}add_header Build-Ver "{{.BUILD_VERSION}}";{{end}}
@@ -80,7 +78,7 @@ server {
   {{end}}
 
   location @websocket {
-    rewrite ^.*$ $api_endpoint break;
+    rewrite ^.*$ $api_rewrite_url break;
     proxy_pass http://backend.srv;
     proxy_http_version 1.1;
     proxy_set_header Connection "Upgrade";
@@ -92,7 +90,7 @@ server {
   location @ {
     access_log /var/log/nginx/access.log upstream;
     include "proxy_set.conf";
-    rewrite ^/(?<p>[^/]+)/.*$ $api_endpoint break;
+    rewrite ^/(?<p>[^/]+)/.*$ $api_rewrite_url break;
     proxy_pass http://backend.srv;
     proxy_redirect ~^http://(backend.srv|localhost)/(.*) http://$http_host/${p}/$2;
     proxy_intercept_errors on;
@@ -110,7 +108,7 @@ map $cookie_samesite_conditions $x_proxy_cookie_flags {
   "https_Chrome_Adv"  "; SameSite=None; Secure";
 }
 
-map $uri $api_endpoint {
+map $uri $api_rewrite_url {
   default $uri;
   {{if eq .FSS_REWRITE_API "1"}}
   ~^{{.FSS_API_BASE}}(.*) /$1;

@@ -24,9 +24,34 @@ $ docker run --rm --net host \
   -v $PWD/dist:/var/www \
   -e FSS_PORT=8080 \
   -e FSS_SPA=0 \
-  -e FSS_PROXY=127.0.0.1:3001 \
   -e FSS_UPSTREAM=192.168.0.10:8709,192.168.0.11:8709 \
   -d tdio/fss-proxy:latest
+```
+
+## Features
+
+### custom proxy 
+
+add proxy maping as env `FSS_PROXY`
+
+```sh
+export FSS_PROXY='[{"path":"/trace","target":"http://192.168.1.199:12800"}]'
+```
+
+this will generate some nginx configure as
+
+```conf
+server {
+  ...
+  # > generate proxy configs
+  location /trace {
+    include "proxy_set.conf";
+    rewrite ^/trace(.*)$ $1 break;
+    proxy_pass http://192.168.1.199:12800;
+    add_header X-Via "$upstream_addr";
+  }
+  ...
+}
 ```
 
 ### Use as base image
