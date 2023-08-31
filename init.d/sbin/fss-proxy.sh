@@ -4,7 +4,7 @@
 # ================================================
 # Description: fss-proxy bootstrap entrypoint
 # Author: @allex_wang (allex.wxn@gmail.com)
-# Last Modified: Thu Feb 02, 2023 14:18
+# Last Modified: Thu Aug 31, 2023 18:59
 # ================================================
 set -eu
 
@@ -19,6 +19,8 @@ FSS_CONF_DIR="/etc/fss-proxy.d"
 if [ "$(id -u)" != "0" ]; then
   sudo chmod o+w /tmp
 fi
+
+export NGINX_VERSION="${NGINX_VERSION:-$(nginx -v 2>&1 |awk -F/ '{print $2}')}"
 
 if [ $# -eq 0 ]; then
   echo "FSS-Proxy $FSS_VERSION (based on nginx $NGINX_VERSION, envgod $(envgod -v))"
