@@ -7,7 +7,7 @@ RUN <<'eot'
 eot
 
 COPY --from=harbor.tidu.io/tdio/fss-proxy:2.x /etc/nginx/static_header_set.conf /etc/nginx/
-COPY --from=tdio/envgod:1.1.2 /envgod /sbin/
+COPY --from=tdio/envgod:1.1.3 /envgod /sbin/
 
 FROM scratch
 

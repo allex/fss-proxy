@@ -53,9 +53,9 @@ server {
   {{if .FSS_PROXY}}
   # > generate proxy configs (start)
   {{range jsonparse .FSS_PROXY}}
-  location {{.path}} {
+  location ^~ {{.path}} {
     include "proxy_set.conf";
-    rewrite ^{{.path}}(.*)$ $1 break;
+    rewrite ^{{trimSuffix .path "/"}}/(.+)$ /$1 break;
     proxy_pass {{.target}};
     add_header X-Via "$upstream_addr";
   }
