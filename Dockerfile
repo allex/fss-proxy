@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1.3-labs
-ARG NGX_VER=1.23.3
-FROM nginx:${NGX_VER}-alpine
+ARG NGINX_VERSION=1.25.2
+FROM nginx:${NGINX_VERSION}-alpine
 
 RUN <<'eot'
   rm -rf /docker-entrypoint.d /docker-entrypoint.sh
@@ -17,7 +17,7 @@ ARG BUILD_GIT_HEAD
 # Base image for fss-proxy and variant distributions
 LABEL tdio.fss-proxy.version="${BUILD_VERSION}" tdio.fss-proxy.commit="${BUILD_GIT_HEAD}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
 
-ENV NGINX_VERSION ${NGX_VER}
+ENV NGINX_VERSION ${NGINX_VERSION}
 ENV PKG_RELEASE   1
 
 ENV TZ Asia/Shanghai

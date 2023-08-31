@@ -42,8 +42,11 @@ get_version = \
 docker-build = \
 	docker buildx build $(1) $(2)
 
+NGINX_VERSION ?= 1.25.2
+
 # enable push mode: > make push=1 build
 docker-build-args = \
+	--build-arg NGINX_VERSION=$(NGINX_VERSION) \
 	--build-arg BUILD_VERSION=$(release_tag) \
 	--build-arg BUILD_GIT_HEAD=$(shell git rev-parse HEAD) \
 	--label "tdio.fss-proxy.dist=$(IMAGE_NAME):$(release_tag)" \
