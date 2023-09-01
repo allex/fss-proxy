@@ -57,6 +57,16 @@ docker-build-args = \
 get-image-names = \
 	$(foreach k,$(sort $(subst $(comma), ,$(shell echo "$(release_tag),$(tags)"))),$(IMAGE_NAME):$(k))
 
+.DEFAULT_GOAL := help
+
+.PHONY: build help
+
+# Parse Makefile and display the help
+## > help - Show help
+help:
+	# Commands:
+	@grep -E '^## > [a-zA-Z_-]+.*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = "## > "}; {printf ">\033[36m%-1s\033[0m %s\n", $$1, $$2}'
+
 .version:
 	@echo $(BUILD_VERSION) > .version
 
@@ -67,8 +77,9 @@ version:
 		echo $$v > $(ROOT_DIR)/.version; \
 	fi
 
-release_tag = $(shell $(get_version))
+release_tag := $(shell $(get_version))
 
+## > build [prerelease=<dev|rc|xxx>] [push=1] [BUILD_VERSION=x.y.z] [NGINX_VERSION=1.25.2] - build docker image
 build: .version
 ifeq ($(strip $(BUILD_VERSION)),)
 	$(error "$${BUILD_VERSION} not defined, run 'make version' first")
@@ -77,7 +88,6 @@ endif
 	$(call docker-build, $(foreach t,$(get-image-names),-t $(t)), $(docker-build-args)) .
 
 clean:
+	# Cleanup build caches
 	rm -f .version
 	docker rmi -f $(get-image-name) &>/dev/null
-
-.PHONY: build
