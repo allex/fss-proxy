@@ -1,6 +1,7 @@
 # syntax = docker/dockerfile:1.3-labs
 ARG NGINX_VERSION=1.25.2
-FROM nginx:${NGINX_VERSION}-alpine
+
+FROM nginx:${NGINX_VERSION}-alpine AS builder
 
 RUN <<'eot'
   rm -rf /docker-entrypoint.d /docker-entrypoint.sh
@@ -8,6 +9,31 @@ eot
 
 COPY --from=harbor.tidu.io/tdio/fss-proxy:2.x /etc/nginx/static_header_set.conf /etc/nginx/
 COPY --from=tdio/envgod:1.1.3 /envgod /sbin/
+
+RUN <<-'EOF'
+# init common configure
+  sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
+
+# cleanup some unused packages
+  apk del nginx-module-image-filter nginx-module-geoip nginx-module-xslt nginx-module-njs
+
+# add default TZ to Asia/Shanghai
+  TZ=Asia/Shanghai \
+    && cp -s /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && echo "${TZ}" > /etc/timezone \
+    && tar -cf - /usr/share/zoneinfo/${TZ} | (apk del --no-cache tzdata && tar -C / -xf -)
+
+# add dependencies for rootless
+  apk add --no-cache sudo
+  apk add --no-cache libcap && setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
+  mkdir -p /var/www /var/patch
+  echo "nginx ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+  chmod 0440 /etc/sudoers
+  touch /var/run/nginx.pid
+  chown nginx.nginx -R /var/www/ /var/cache/nginx/ /var/log/nginx/ /etc/nginx/conf.d/ /var/run/nginx.pid
+  rm -f /usr/sbin/nginx-debug
+  rm -rf /tmp && (umask 0; mkdir /tmp)
+EOF
 
 FROM scratch
 
@@ -37,20 +63,9 @@ ENV FSS_API_BASE=/api/
 ENV FSS_REWRITE_API=1
 ENV FSS_SVC_PREFIX=/svc/
 
-COPY --from=0 / /
+COPY --from=builder / /
 
 ADD init.d /
-RUN <<-'eot'
-  sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
-  apk add --no-cache sudo
-  apk add --no-cache libcap && setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
-  mkdir -p /var/www /var/patch
-  echo "nginx ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-  chmod 0440 /etc/sudoers
-  touch /var/run/nginx.pid
-  chown nginx.nginx -R /var/www/ /var/cache/nginx/ /var/log/nginx/ /etc/nginx/conf.d/ /var/run/nginx.pid
-  rm -rf /tmp && (umask 0; mkdir /tmp)
-eot
 
 WORKDIR /var/www
 USER nginx
