@@ -16,6 +16,7 @@ server {
   http2 on;
   ssl_certificate /etc/nginx/ssl/tls.crt;
   ssl_certificate_key /etc/nginx/ssl/tls.key;
+  error_page 497 =301 https://$host:$server_port$request_uri;
   {{end}}
 
   {{if eq .FSS_SPA "1"}}
