@@ -19,7 +19,13 @@ endif
 
 IMAGE_NAME ?= $(prefix)/fss-proxy
 
-BUILD_VERSION ?= $(shell cat .version 2>/dev/null)
+# auto gen version
+INC_VERSION := 0
+
+ifeq ($(BUILD_VERSION),)
+	BUILD_VERSION := $(shell cat .version 2>/dev/null)
+	INC_VERSION := 1
+endif
 
 get_version = \
 	set -eu; \
@@ -30,10 +36,12 @@ get_version = \
 		fi \
 	fi; \
 	[ -n "$$ver" ] || exit 1; \
+	if [ "$(INC_VERSION)" = "1" ]; then \
+		ver=$$(echo "$$ver" | awk -F. -v OFS=. '$$NF~"[0-9]+"{$$NF++}{print}'); \
+	fi; \
 	prerelease=$(prerelease); \
 	if [ -n "$$prerelease" ]; then \
-		nextver=$$(echo "$$ver" | awk -F. -v OFS=. '$$NF~"[0-9]+"{$$NF++}{print}'); \
-		ver="$${nextver%%-$$prerelease}-$$prerelease"; \
+		ver="$${ver%%-$$prerelease}-$$prerelease"; \
 	fi; \
 	echo $$ver
 
