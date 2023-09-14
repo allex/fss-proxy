@@ -19,6 +19,12 @@ server {
   error_page 497 =301 https://$host:$server_port$request_uri;
   {{end}}
 
+  {{if eq .FSS_FORCE_SSL "1"}}
+  if ($scheme = "http") {
+    return 301 https://$host:${FSS_SSL_PORT:-}$request_uri;
+  }
+  {{end}}
+
   {{if eq .FSS_SPA "1"}}
   index index.html;
   rewrite ^/*$ /index.html last;
