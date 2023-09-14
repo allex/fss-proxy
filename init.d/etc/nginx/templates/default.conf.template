@@ -14,8 +14,8 @@ server {
   {{if .FSS_SSL_PORT}}
   listen {{.FSS_SSL_PORT}} ssl;
   http2 on;
-  ssl_certificate /etc/nginx/ssl/tls.crt;
-  ssl_certificate_key /etc/nginx/ssl/tls.key;
+  ssl_certificate ssl/tls.crt;
+  ssl_certificate_key ssl/tls.key;
   error_page 497 =301 https://$host:$server_port$request_uri;
   {{end}}
 
@@ -29,8 +29,6 @@ server {
   index index.html;
   rewrite ^/*$ /index.html last;
   {{end}}
-
-  set $prefix '';
 
   # patch backend cookie samesite flags
   set $cookie_samesite_conditions "";

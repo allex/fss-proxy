@@ -4,7 +4,7 @@
 # ================================================
 # Description: fss-proxy bootstrap entrypoint
 # Author: @allex_wang (allex.wxn@gmail.com)
-# Last Modified: Thu Aug 31, 2023 18:59
+# Last Modified: Thu Sep 14, 2023 14:25
 # ================================================
 set -eu
 
@@ -26,18 +26,9 @@ if [ $# -eq 0 ]; then
   echo "FSS-Proxy $FSS_VERSION (based on nginx $NGINX_VERSION, envgod $(envgod -v))"
 
   # shellcheck disable=SC1091
-  [ -f /.env ] && {
-    set -a
-    . /.env
-    set +a
-  }
+  [ -f /.env ] && { set -a; . /.env; set +a; }
 
-  # `PATCH_FILE` is deprecated since 1.1.4, use `PATCH_ENTRYPOINT` instead
-  if [ -n "${PATCH_FILE:-}" ]; then
-    echo >&2 "warning: 'PATCH_FILE' is deprecated since v1.1.6, use 'PATCH_ENTRYPOINT' instead"
-  fi
-
-  PATCH_ENTRYPOINT="${PATCH_ENTRYPOINT:-${PATCH_FILE:-}}"
+  export PATCH_ENTRYPOINT="${PATCH_ENTRYPOINT:-${PATCH_FILE:-}}"
 
   # Execute patch script optionally
   if [ -f "$PATCH_ENTRYPOINT" ]; then
