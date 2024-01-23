@@ -56,6 +56,12 @@ server {
     add_header X-Content-Type-Options nosniff;
   }
 
+  # adapt set proxy_connection for http/websock
+  set $proxy_connection "close";
+  if ($http_upgrade = "websocket") {
+     set $proxy_connection "upgrade";
+  }
+
   {{if .FSS_PROXY}}
   # > generate proxy configs (start)
   {{range jsonparse .FSS_PROXY}}
@@ -64,6 +70,9 @@ server {
     rewrite ^{{trimSuffix .path "/"}}/(.+)$ /$1 break;
     proxy_pass {{.target}};
     add_header X-Via "$upstream_addr";
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $proxy_connection;
   }
   {{end}}
   # > generate proxy configs (end)
