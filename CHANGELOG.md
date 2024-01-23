@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.18](https://github.com/allex/fss-proxy/compare/1.1.17...1.1.18) (2024-01-23)
+
+
+### Bug Fixes
+
+* add proxy websocket support ([d996902](https://github.com/allex/fss-proxy/commit/d99690223daab6fc431e7b06afa27b4a6734f601))
+* **Makefile:** drop version stamp file ([38c5821](https://github.com/allex/fss-proxy/commit/38c58215f8f7063e7b5750596f64c757005208f2))
+
 ### [1.1.17](https://github.com/allex/fss-proxy/compare/1.1.16...1.1.17) (2023-09-14)
 
 
