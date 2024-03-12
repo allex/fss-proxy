@@ -67,7 +67,7 @@ server {
   {{range jsonparse .FSS_PROXY}}
   location ^~ {{.path}} {
     include "proxy_set.conf";
-    rewrite ^{{trimSuffix .path "/"}}/(.+)$ /$1 break;
+    rewrite ^{{trimSuffix .path "/"}}/(?<rewrite_path>.+)$ /$1 break;
     proxy_pass {{.target}};
     add_header X-Via "$upstream_addr";
     proxy_http_version 1.1;

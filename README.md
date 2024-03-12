@@ -35,7 +35,7 @@ $ docker run --rm --net host \
 add proxy maping as env `FSS_PROXY`
 
 ```sh
-export FSS_PROXY='[{"path":"/trace","target":"http://192.168.1.199:12800"}]'
+export FSS_PROXY='[{"path":"/trace","target":"http://192.168.1.199:12800"},{"path":"/api/device","target":"http://192.168.1.20:12801/v1/device/$rewrite_path"}]'
 ```
 
 this will generate some nginx configure as
