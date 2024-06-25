@@ -23,10 +23,13 @@ RUN <<-'EOF'
   # add dependencies for rootless
   apk add --no-cache sudo
   apk add --no-cache libcap && setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
-  mkdir -p /var/www /var/cache/nginx /var/log/nginx
+
+  # add nginx to sudoers
+  mkdir -p /var/www /var/cache/nginx /var/log/nginx /etc/nginx/ssl
   echo "nginx ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
   chmod 0440 /etc/sudoers
-  chown nginx.nginx -R /var/www/ /var/cache/nginx/ /var/log/nginx/ /etc/nginx/conf.d/
+
+  chown nginx.nginx -R /var/www/ /var/cache/nginx/ /var/log/nginx/ /etc/nginx/conf.d/ /etc/nginx/ssl
   rm -f /usr/sbin/nginx-debug
   rm -rf /tmp/*
 EOF
@@ -51,7 +54,11 @@ ENV FSS_CONF_DIR=/etc/fss-proxy.d/
 ENV FSS_VERSION=${BUILD_VERSION}
 ENV FSS_PORT=80
 ENV FSS_SSL_PORT=
-ENV FSS_FORCE_SSL=
+ENV FSS_FORCE_SSL=0
+ENV FSS_SSL_ISSUER_DISABLED=true
+ENV FSS_SSL_ISSUER_SERVER=https://fe.tidu.io/gen-cert?ipAddrs=%ip&dnsNames=%domain
+ENV FSS_SSL_ISSUER_IPADDR=
+ENV FSS_SSL_ISSUER_DOMAIN=
 ENV FSS_SPA=1
 ENV FSS_PROXY=
 ENV FSS_UPSTREAM=127.0.0.1:8709
