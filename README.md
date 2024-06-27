@@ -17,8 +17,11 @@ $ docker run --name cmp-ui --net host -v /local/www:/var/www -v /local/etc/nginx
 * **FSS_SSL_PORT** - (Optional) set the ssl port to https listen, Defaults to nil
 * **FSS_API_BASE** - (Optional) set the webapp api prefix, Defaults to `/api`
 * **FSS_REWRITE_API** (Optional) rewrite backend service to the specific path (`FSS_API_BASE`), Defaults to "1"
+* **FSS_HEADERS_STATIC_FILES** set static assets headers (includes `*` CORS), Defaults to "1"
+* **FSS_FLG_LOCAL_RESOLVERS** specify flag to enable local resolvers, Defaults to "1"
+* **FSS_LOCAL_RESOLVERS** specify custom resolvers
 
-```
+```sh
 $ docker run --rm --net host \
   --name xx \
   -v $PWD/dist:/var/www \
