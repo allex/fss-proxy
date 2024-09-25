@@ -112,8 +112,6 @@ server {
     add_header Cache-Control "no-cache, no-store, must-revalidate";
     add_header X-Via "$upstream_addr";
     proxy_cookie_path / /$x_proxy_cookie_flags;
-    add_header Access-Control-Allow-Origin "*";
-    add_header Access-Control-Allow-Methods "POST, GET, OPTIONS";
     add_header Content-Type $api_content_type;
   }
 }
