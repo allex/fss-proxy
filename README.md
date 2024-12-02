@@ -32,7 +32,20 @@ $ docker run --rm --net host \
 
 ### custom proxy 
 
-add proxy maping as env `FSS_PROXY`
+Add proxy collection with type of `ProxyEntry[]` as env `FSS_PROXY`
+
+```typescript
+type ProxyEntry = {
+  // path use for construct ngx `location`
+  path: string;
+  // pass_proxy <URL>
+  target: string;
+  // add CORS headers
+  cors?: boolean;
+  // enable nginx rewrite directive, defaults true
+  rewrite?: boolean;
+}
+```
 
 ```sh
 export FSS_PROXY='[{"path":"/trace","target":"http://192.168.1.199:12800"},{"path":"/api/device","target":"http://192.168.1.20:12801/v1/device/$rewrite_path"}]'
