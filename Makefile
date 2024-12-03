@@ -2,52 +2,49 @@
 # by allex_wang
 
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+GIT_COMMIT := $(shell git rev-parse HEAD)
+LATEST_TAG := $(shell git log --decorate --pretty="format:%d" | awk 'match($$0, "[(]?tag:\\s*v?([^,]+?)[,)]", arr) { if(arr[1] ~ "^.+?[0-9]+\\.[0-9]+\\.[0-9]+(-.+)?$$") print arr[1]; exit; }')
+
+# flag to disable automate version if set true
+STATIC_VERSION := false
 
 comma := ,
 platform ?= linux/amd64,linux/arm64
-prefix ?= harbor.tidu.io/tdio
 
-# custom tags for multi image distribute, sep by comma (,), eg: make build tags=1.0.1,latest,next,1.x
-tags ?=
-
-# pre-release name, eg. dev, bate, rc
+# prerelease tag, such as dev,rc,next etc,.
 prerelease ?=
-
-ifndef prefix
-	$(error prefix not valid)
-endif
-
-IMAGE_NAME ?= $(prefix)/fss-proxy
-
-GIT_COMMIT := $(shell git rev-parse HEAD)
-LAST_TAG ?= $(shell git log --decorate --no-color --pretty="format:%d" |awk 'match($$0, "[(]?tag:\\s*v?([^,]+?)[,)]", arr) { if(arr[1] ~ "^.+?[0-9]+\\.[0-9]+\\.[0-9]+(-.+)?$$") print arr[1]; exit; }')
-
-# check static version mode
-ifeq ($(origin VERSION), command line)
-	# Variable is defined via command parameter
-	STATIC_VERSION := true
-else
-	STATIC_VERSION := false
-	# detect the reference version to auto generate the build version.
-	ifneq ("$(wildcard .version)","")
-		VERSION := $(shell cat .version 2>/dev/null)
-	else
-		VERSION := $(LAST_TAG)
-	endif
-endif
 
 # Specify the release type manully, <major|minor|patch>, default release as last tag
 # increase patch version when prerelease mode
 release_as ?= patch
 
+# check static version mode, set with args: VERSION=xxx
+ifeq ($(origin VERSION), command line)
+	# Variable is defined via command parameter
+	STATIC_VERSION := true
+	LATEST_TAG := $(VERSION)
+endif
+
+IS_LATEST := false
+ifeq ($(shell git describe --tags --exact-match --match $(LATEST_TAG) >/dev/null 2>&1; echo $$?), 0)
+	STATIC_VERSION := true
+	IS_LATEST := true
+endif
+
+ifneq ($(STATIC_VERSION),true)
+	ifneq ($(origin prerelease), command line)
+		prerelease := dev
+	endif
+endif
+
 get_version = \
 	set -eu; \
-	ver=$(VERSION); \
+	ver=$(LATEST_TAG); \
 	[ -n "$$ver" ] || exit 1; \
-	if [ "$(STATIC_VERSION)" != "true" ]; then \
+	if [ "$(IS_LATEST)" != "true" -a $(STATIC_VERSION) != "true" ]; then \
 		release_as=$$(echo $(release_as) | sed "s/major/M/;s/minor/m/;s/patch/p/"); \
 		ver=$$(echo "$$ver" | awk -v release_as=$$release_as 'BEGIN{FS=OFS="."} release_as~"^v?[0-9]+(\\.[0-9]+)*$$"{print gensub("^v","","g",release_as);exit} $$0~"(\\.[0-9]+)+$$"{ i=index("Mmp", release_as); if (i!=0) { $$i++; while (i<3) {$$(++i)=0} } print }'); \
-		ver=$${ver:-$(VERSION)}; \
+		ver=$${ver:-$(LATEST_TAG)}; \
 	fi; \
 	prerelease=$(prerelease); \
 	if [ -n "$$prerelease" ]; then \
@@ -55,7 +52,19 @@ get_version = \
 	fi; \
 	echo $$ver
 
-release_tag := $(shell $(get_version))
+# export for sub shell
+export RELEASE_TAG := $(shell $(get_version))
+
+# custom tags for multi image distribute, sep by comma (,), eg: make build tags=1.0.1,latest,next,1.x
+tags ?=
+
+prefix ?= harbor.tidu.io/tdio
+
+ifndef prefix
+	$(error docker registry prefix not valid)
+endif
+
+image_name ?= $(prefix)/fss-proxy
 
 docker-build = \
 	docker buildx build $(1) $(2)
@@ -65,15 +74,15 @@ NGINX_VERSION ?= 1.25.2
 # enable push mode: > make push=1 build
 docker-build-args = \
 	--build-arg NGINX_VERSION=$(NGINX_VERSION) \
-	--build-arg BUILD_VERSION=$(release_tag) \
-	--build-arg BUILD_GIT_HEAD=$(shell git rev-parse HEAD) \
-	--label "tdio.fss-proxy.dist=$(IMAGE_NAME):$(release_tag)" \
+	--build-arg BUILD_VERSION=$(RELEASE_TAG) \
+	--build-arg BUILD_GIT_COMMIT=$(GIT_COMMIT) \
+	--label "tdio.fss-proxy.dist=$(image_name):$(RELEASE_TAG)" \
 	--platform=$(platform) \
 	$(if $(push),--push,--load)
 
 # get image name list, eg: tdio/foo:1.0 tdio/foo:latest tdio/foo:8.x
 get-image-names = \
-	$(foreach k,$(sort $(subst $(comma), ,$(shell echo "$(release_tag),$(tags)"))),$(IMAGE_NAME):$(k))
+	$(foreach k,$(sort $(subst $(comma), ,$(shell echo "$(RELEASE_TAG),$(tags)"))),$(image_name):$(k))
 
 .DEFAULT_GOAL := help
 
@@ -85,23 +94,17 @@ help:
 	# Commands:
 	@grep -E '^## > [a-zA-Z_-]+.*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = "## > "}; {printf ">\033[36m%-1s\033[0m %s\n", $$1, $$2}'
 
-.version:
-	@echo $(VERSION) > .version
-
+## > version [release_as=patch|minor|major] [prerelease=<dev|rc|xxx>] - show build version
 version:
-	@read -p "Enter a new version: ${VERSION:+ (current: ${VERSION})}" v; \
-	if [ "$$v" ]; then \
-		echo "The publish version is: $$v"; \
-		echo $$v > $(ROOT_DIR)/.version; \
-	fi
+	@echo "Name: $(image_name)"
+	@echo "Version: $${RELEASE_TAG}"
+	@echo "Commit: $(GIT_COMMIT)"
 
 ## > build [release_as=patch|minor|major] [prerelease=<dev|rc|xxx>] [push=1] [VERSION=x.y.z] [NGINX_VERSION=1.25.2] - build docker image
-build: .version
-ifeq ($(strip $(VERSION)),)
-	$(error "VERSION not defined, run 'make version' first")
-endif
-	# Start build docker image $(release_tag)
+build:
+	# Start build docker image $(RELEASE_TAG)
 	$(call docker-build, $(foreach t,$(get-image-names),-t $(t)), $(docker-build-args)) .
+	@echo $(RELEASE_TAG) > .version
 
 ## > dry-release - dry run release
 dry-release:
@@ -109,5 +112,4 @@ dry-release:
 
 clean:
 	# Cleanup build caches
-	rm -f .version
 	docker rmi -f $(get-image-name) &>/dev/null

@@ -36,11 +36,11 @@ ADD init.d /
 FROM scratch
 
 ARG BUILD_VERSION
-ARG BUILD_GIT_HEAD
+ARG BUILD_GIT_COMMIT
 ARG NGINX_VERSION
 
 # Base image for fss-proxy and variant distributions
-LABEL tdio.fss-proxy.version="${BUILD_VERSION}" tdio.fss-proxy.commit="${BUILD_GIT_HEAD}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
+LABEL tdio.fss-proxy.version="${BUILD_VERSION}" tdio.fss-proxy.commit="${BUILD_GIT_COMMIT}" maintainer="allex_wang <allex.wxn@gmail.com>" description="Base image for FE development integration"
 
 ENV NGINX_VERSION ${NGINX_VERSION}
 ENV PKG_RELEASE   1
