@@ -58,7 +58,7 @@ ENV FSS_UPSTREAM=127.0.0.1:8709
 ENV FSS_HEADERS_CSP="script-src 'self' https://* http://* 'unsafe-eval' 'unsafe-inline' blob:; worker-src 'self' 'unsafe-inline' blob:;"
 ENV FSS_HEADERS_XSS_PROTECTION="1; mode=block"
 ENV FSS_VALID_REFERERS=
-ENV FSS_FLG_LOCAL_RESOLVERS=1
+ENV FSS_LOCAL_RESOLVERS_DISABLED=false
 ENV FSS_LOCAL_RESOLVERS=
 
 # api base for location tilde modifier (^~)
@@ -73,9 +73,11 @@ USER nginx
 
 EXPOSE ${FSS_PORT}
 ENTRYPOINT ["/sbin/fss-proxy.sh"]
+STOPSIGNAL SIGQUIT
+CMD []
 
 # Provide some build args for base image derives
-ONBUILD ARG VERBOSE=0
+ONBUILD ARG VERBOSE=false
 ONBUILD ARG BUILD_GIT_HEAD
 ONBUILD ARG BUILD_VERSION
 ONBUILD ENV BUILD_GIT_HEAD=${BUILD_GIT_HEAD} BUILD_VERSION="${BUILD_VERSION}"

@@ -6,46 +6,96 @@ set -eu
 
 PROG=$(basename "$0")
 
-[ -n "$FSS_CONF_DIR" ] || {
-  echo >&2 "ERR: environ variable 'FSS_CONF_DIR' is not set."
+[ -n "${FSS_CONF_DIR:-}" ] || {
+  echo >&2 "fatal: environ variable 'FSS_CONF_DIR' is not set."
   exit 1
 }
 
-# shellcheck source=/dev/null
+# shellcheck disable=SC1091
 . "$FSS_CONF_DIR"/.helpers/functions
 
-if [ "${VERBOSE:-}" = "true" ]; then
+# set log output to /dev/null if FSS_QUIET_LOGS is true
+if is_true "${FSS_QUIET_LOGS-0}" ; then
+  exec 3>/dev/null
+else
+  exec 3>&1
+fi
+
+USAGE="
+  --load-env load global env file: /.env
+  -x, --verbose trace for debug
+  -d, --daemonize Run nginx as sysv daemon (in background)"
+
+usage() {
+  echo "Usage: $PROG $USAGE"
+  exit 0
+}
+
+load_env=
+runas_daemon=
+
+while test $# -ne 0
+do
+  case "$1" in
+    -d | --daemonize)
+      runas_daemon=1
+      ;;
+    --load-env)
+      load_env=1
+      ;;
+    -h | --help)
+      usage
+      ;;
+    -x | --verbose)
+      export VERBOSE=1
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+if is_true "${VERBOSE:-}"; then
   set -x
 fi
 
-if [ $# -eq 0 ]; then
-  echo "FSS-Proxy $FSS_VERSION (based on nginx $NGINX_VERSION, envgod $(envgod -v))"
-
+# load environment variables from /.env
+if is_true "$load_env" && test -f /.env; then
   # shellcheck disable=SC1091
-  if [ -f /.env ]; then
-    # load environment variables from /.env
-    set -a; . /.env; set +a
-  fi
+  { set -a; . /.env; set +a; }
+fi
 
-  # been used for shell scripts in /etc/fss-prox.d/
-  exec 3>&1
+if [ $# -eq 0 ]; then
+  log "FSS-Proxy $FSS_VERSION (based on nginx $NGINX_VERSION, envgod $(envgod -v))"
 
   find "$FSS_CONF_DIR" -follow -type f -print | sort -V | while read -r f; do
     case "$f" in
+      *.envsh)
+        log "include '$f'";
+        # shellcheck disable=SC1090
+        . "$f"
+        ;;
       *.sh)
         if [ -x "$f" ]; then
+          log "=> '$f'";
           "$f"
         else
           # warn on shell scripts without exec bit
-          echo >&2 "Ignoring $f, not executable";
+          warn "Ignoring $f, not executable";
         fi
         ;;
       *) ;;
     esac
   done
 
-  echo "Trying to launch server at http/${FSS_PORT}${FSS_SSL_PORT:+ https/${FSS_SSL_PORT}} ..."
-  eval set -- "nginx -g 'daemon off;'"
+  log "Configuration complete. ready for startup http/${FSS_PORT}${FSS_SSL_PORT:+ https/${FSS_SSL_PORT}} ..."
+
+  if is_true "${runas_daemon}"; then
+    eval set -- "nginx"
+  else
+    eval set -- "nginx -g 'daemon off;'"
+  fi
 fi
 
 exec "$@"

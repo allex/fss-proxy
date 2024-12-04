@@ -113,3 +113,7 @@ dry-release:
 clean:
 	# Cleanup build caches
 	docker rmi -f $(get-image-name) &>/dev/null
+
+## > test - testing with docker compose service
+test:
+	docker compose run --build test-build

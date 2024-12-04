@@ -3,13 +3,17 @@
 
 set -eu
 
+LC_ALL=C
+
 # shellcheck disable=SC1091
 . "${FSS_CONF_DIR}/.helpers/functions"
 
-LC_ALL=C
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# skip if disabled
+if is_true "${FSS_LOCAL_RESOLVERS_DISABLED:-}" ; then
+  exit 0
+fi
 
-[ "${FSS_FLG_LOCAL_RESOLVERS:-}" ] || return 0
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 resolvers=${FSS_LOCAL_RESOLVERS:-}
 
