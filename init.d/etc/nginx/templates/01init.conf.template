@@ -1,0 +1,3 @@
+{{if eq .FSS_SPA "1"}}
+include "spa_paths.map";
+{{end}}

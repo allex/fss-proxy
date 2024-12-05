@@ -10,6 +10,7 @@ $ docker run --name cmp-ui --net host -v /local/www:/var/www -v /local/etc/nginx
 
 ## Envs
 
+* **FSS_SERVER_NAME** - Nginx server_name, Defaults to unset.
 * **FSS_PORT** - Nginx port to listen, Defaults to `80`
 * **FSS_PROXY** - Proxy static resource to a upsteam server, should set `FSS_SPA=0` when proxy mode.
 * **FSS_UPSTREAM** - Proxy to upsteam to router overload: `/api/*`, Defaults to `127.0.0.1:8709`

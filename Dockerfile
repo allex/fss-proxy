@@ -3,7 +3,6 @@ ARG NGINX_VERSION=1.25.2
 
 FROM nginx:${NGINX_VERSION}-alpine AS builder
 
-COPY --from=harbor.tidu.io/tdio/fss-proxy:2.x /etc/nginx/static_header_set.conf /etc/nginx/
 COPY --from=tdio/envgod:1.1.3 /envgod /sbin/
 
 RUN <<-'EOF'
