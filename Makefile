@@ -108,7 +108,7 @@ build:
 
 ## > dry-release - dry run release
 dry-release:
-	git release -d
+	git release --from-version $(LATEST_TAG) -r patch -d
 
 clean:
 	# Cleanup build caches

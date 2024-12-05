@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.20](https://github.com/allex/fss-proxy/compare/1.1.19...1.1.20) (2024-12-05)
+
+
+### Features
+
+* add auto ssl certs issuer ([ec30509](https://github.com/allex/fss-proxy/commit/ec3050993388c7248fb36ff9a6f5441422363cf6))
+* add custom resolvers ([85fab9a](https://github.com/allex/fss-proxy/commit/85fab9a1e198dbef26c7a474f3c9b8f000158f02))
+* disable proxy buffering ([574b458](https://github.com/allex/fss-proxy/commit/574b4585fc67f9b51cfbef338455300aefedfc0a))
+* enhances FSS_PROXY entry with properties (rewrite, cors) ([4e6bac1](https://github.com/allex/fss-proxy/commit/4e6bac1eebec00993b57321f177473045db832f4))
+* refactor patch load mechanism ([072df8f](https://github.com/allex/fss-proxy/commit/072df8f1f9939f94bd4d10d7b60af5443a8e1539))
+
+
+### Bug Fixes
+
+* add custom server_name supports ([a44b4bc](https://github.com/allex/fss-proxy/commit/a44b4bcb52f140d6a38f620d509cc5fd37553efd))
+* remove api cors headers ([8a455be](https://github.com/allex/fss-proxy/commit/8a455bebbfc38a19697de1e3356b30c5884ee1a2))
+
 ### [1.1.18](https://github.com/allex/fss-proxy/compare/1.1.17...1.1.18) (2024-01-23)
 
 
