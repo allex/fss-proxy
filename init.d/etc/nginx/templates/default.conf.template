@@ -10,7 +10,6 @@ server {
   {{if .FSS_SERVER_NAME}}server_name $FSS_SERVER_NAME;{{end}}
 
   charset UTF-8;
-  server_tokens off;
   root /var/www;
 
   {{if .FSS_SSL_PORT}}
@@ -52,7 +51,7 @@ server {
     add_header X-Origin-Server $hostname;
     {{if .FSS_HEADERS_CSP}}add_header Content-Security-Policy "{{.FSS_HEADERS_CSP}}";{{end}}
     {{if .FSS_HEADERS_XSS_PROTECTION}}add_header X-XSS-Protection "{{.FSS_HEADERS_XSS_PROTECTION}}";{{end}}
-    {{if .BUILD_VERSION}}add_header Build-Ver "{{.BUILD_VERSION}}";{{end}}
+    {{if .BUILD_VERSION}}add_header X-Build-Version "{{.BUILD_VERSION}}";{{end}}
     add_header Access-Control-Allow-Origin "*";
     add_header Access-Control-Allow-Methods "POST, GET, OPTIONS";
     add_header X-Content-Type-Options nosniff;
@@ -90,7 +89,7 @@ server {
   location ~* \.(js|css|eot|woff|woff2|ttf|svg|gif|jpeg|jpg|png|bmp|webp|swf|ico|mp4|ogg|ogv|ogm|webm)(\?|$) {
     expires 30d;
     include static_header_set.conf;
-    {{if .BUILD_VERSION}}add_header Build-Ver "{{.BUILD_VERSION}}";{{end}}
+    {{if .BUILD_VERSION}}add_header X-Build-Version "{{.BUILD_VERSION}}";{{end}}
   }
 
   {{if .FSS_API_BASE}}
