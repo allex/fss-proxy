@@ -31,6 +31,8 @@ RUN <<-'EOF'
   chown nginx.nginx -R /var/www/ /var/cache/nginx/ /var/log/nginx/ /etc/nginx/conf.d/ /etc/nginx/ssl
   rm -f /usr/sbin/nginx-debug
   rm -rf /tmp/*
+
+  ln -sf ../usr/sbin/fss-proxy.sh /sbin/fss-proxy.sh
 EOF
 
 ADD init.d /
@@ -49,7 +51,6 @@ ENV PKG_RELEASE   1
 
 ENV TZ Asia/Shanghai
 
-ENV FSS_CONF_DIR=/etc/fss-proxy.d/
 ENV FSS_VERSION=${BUILD_VERSION}
 ENV FSS_PORT=80
 ENV FSS_SSL_PORT=
@@ -63,7 +64,10 @@ ENV FSS_PROXY=
 ENV FSS_UPSTREAM=127.0.0.1:8709
 ENV FSS_HEADERS_CSP="script-src 'self' https://* http://* 'unsafe-eval' 'unsafe-inline' blob:; worker-src 'self' 'unsafe-inline' blob:;"
 ENV FSS_HEADERS_XSS_PROTECTION="1; mode=block"
+
+# ref: [valid_referers](https://nginx.org/en/docs/http/ngx_http_referer_module.html#valid_referers)
 ENV FSS_VALID_REFERERS=
+
 ENV FSS_LOCAL_RESOLVERS_DISABLED=false
 ENV FSS_LOCAL_RESOLVERS=
 

@@ -6,7 +6,7 @@ set -e
 ME=$(basename "$0")
 
 # shellcheck disable=SC1091
-. "$FSS_CONF_DIR"/.helpers/functions
+. "$FSS_HOME"/libexec/fss-proxy/functions
 
 # Evaluate ngx config template with envs
 auto_envsubst() {

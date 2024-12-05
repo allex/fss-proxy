@@ -6,7 +6,7 @@ set -eu
 LC_ALL=C
 
 # shellcheck disable=SC1091
-. "${FSS_CONF_DIR}/.helpers/functions"
+. "${FSS_HOME}/libexec/fss-proxy/functions"
 
 # skip if disabled
 if is_true "${FSS_LOCAL_RESOLVERS_DISABLED:-}" ; then

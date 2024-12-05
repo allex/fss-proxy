@@ -5,14 +5,17 @@
 set -eu
 
 PROG=$(basename "$0")
+FSS_HOME="$(cd -P -- "$(dirname -- "$(readlink -f "$0")")/.." && pwd -P)"
 
-[ -n "${FSS_CONF_DIR:-}" ] || {
-  echo >&2 "fatal: environ variable 'FSS_CONF_DIR' is not set."
+[ -n "${FSS_HOME:-}" ] || {
+  echo >&2 "fatal: environ variable 'FSS_HOME' is not set."
   exit 1
 }
 
+export FSS_HOME
+
 # shellcheck disable=SC1091
-. "$FSS_CONF_DIR"/.helpers/functions
+. "$FSS_HOME"/libexec/fss-proxy/functions
 
 # set log output to /dev/null if FSS_QUIET_LOGS is true
 if is_true "${FSS_QUIET_LOGS-0}" ; then
@@ -69,7 +72,7 @@ fi
 if [ $# -eq 0 ]; then
   log "FSS-Proxy $FSS_VERSION (based on nginx $NGINX_VERSION, envgod $(envgod -v))"
 
-  find "$FSS_CONF_DIR" -follow -type f -print | sort -V | while read -r f; do
+  find "$FSS_HOME/libexec/" -follow -type f -print | sort -V | while read -r f; do
     case "$f" in
       *.envsh)
         log "include '$f'";
