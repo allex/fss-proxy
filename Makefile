@@ -102,7 +102,7 @@ version:
 
 ## > build [release_as=patch|minor|major] [prerelease=<dev|rc|xxx>] [push=1] [VERSION=x.y.z] [NGINX_VERSION=1.25.2] - build docker image
 build:
-	# Start build docker image $(RELEASE_TAG)
+	# Start build $(get-image-names)
 	$(call docker-build, $(foreach t,$(get-image-names),-t $(t)), $(docker-build-args)) .
 	@echo $(RELEASE_TAG) > .version
 
