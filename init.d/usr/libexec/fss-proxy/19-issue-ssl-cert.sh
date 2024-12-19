@@ -19,13 +19,13 @@ if is_true "${VERBOSE:-}"; then
 fi
 
 # auto issuer is disabled
-if is_true "${FSS_SSL_ISSUER_DISABLED:-}" ; then
+if ! is_true "${FSS_SSL_ISSUER_ENABLE:-}" ; then
   if [ -n "${FSS_SSL_PORT:-}" ] ; then
     if [ ! -r $cert_dir/tls.key ] || [ ! -r $cert_dir/tls.crt ]; then
-      die "https is enabled but cert files not found, set \"FSS_SSL_ISSUER_DISABLED=false\" to auto issue cert files"
+      die "https is enabled but cert files not found, set \"FSS_SSL_ISSUER_ENABLE=true\" to auto issue cert files"
     fi
   fi
-  info "The automatic issuance of TLS cert files is disabled due to the setting \"FSS_SSL_ISSUER_DISABLED=true\"."
+  info "The automatic issuance of TLS cert files is disabled. set \"FSS_SSL_ISSUER_ENABLE=true\" to enable it."
   exit 0
 fi
 

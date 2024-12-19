@@ -22,7 +22,7 @@ $ docker run --name cmp-ui --net host -v /local/www:/var/www -v /local/etc/nginx
 * **FSS_LOCAL_RESOLVERS_DISABLED** specify flag to enable local resolvers, Defaults to "false"
 * **FSS_LOCAL_RESOLVERS** specify custom DNS resolvers.
 * **FSS_QUIET_LOGS** - (Optional) set the entrypoint to be quiet, Defaults to "false"
-* **FSS_SSL_ISSUER_DISABLED** - (Optional) disable auto issue ssl certs, Defaults to true
+* **FSS_SSL_ISSUER_ENABLE** - (Optional) enable auto issue ssl certs, Defaults to "false"
 * **FSS_SSL_ISSUER_IPADDR** - (Optional) set the cert ip addr been issued. defaults to host LAN ip
 * **FSS_SSL_ISSUER_DOMAIN** - (Optional) set the cert domain been issued.
 
