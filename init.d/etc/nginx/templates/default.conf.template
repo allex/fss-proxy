@@ -9,9 +9,6 @@ server {
   listen {{.FSS_PORT}};
   {{if .FSS_SERVER_NAME}}server_name $FSS_SERVER_NAME;{{end}}
 
-  charset UTF-8;
-  root /var/www;
-
   {{if .FSS_SSL_PORT}}
   listen {{.FSS_SSL_PORT}} ssl;
   http2 on;
@@ -21,10 +18,30 @@ server {
   {{end}}
 
   {{if eq .FSS_FORCE_SSL "1"}}
-  if ($scheme = "http") {
+  if ($x_forwarded_proto != "https") {
     return 301 https://$host:${FSS_SSL_PORT:-}$request_uri;
   }
   {{end}}
+
+  access_log off;
+
+  location / {
+    include "proxy_set.conf";
+    proxy_pass http://unix:/tmp/n.sock:/;
+  }
+
+  {{if and .FSS_CONTEXT_PATH (ne .FSS_CONTEXT_PATH "/")}}
+  location ${FSS_CONTEXT_PATH} {
+    include "proxy_set.conf";
+    proxy_pass http://unix:/tmp/n.sock:/;
+  }
+  {{end}}
+}
+
+server {
+  listen unix:/tmp/n.sock;
+  charset UTF-8;
+  root /var/www;
 
   {{if eq .FSS_SPA "1"}}
   index index.html;
@@ -33,7 +50,7 @@ server {
 
   # patch backend cookie samesite flags
   set $cookie_samesite_conditions "";
-  if ( $http_user_agent ~ "Chrome[^ \/]*\/[189][\d]+[\.\d]*" ) { set $cookie_samesite_conditions "${scheme}_Chrome_Adv"; }
+  if ( $http_user_agent ~ "Chrome[^ \/]*\/[189][\d]+[\.\d]*" ) { set $cookie_samesite_conditions "${x_forwarded_proto}_Chrome_Adv"; }
 
   {{if .FSS_VALID_REFERERS}}
   # > build valid_referers
@@ -55,6 +72,12 @@ server {
     add_header Access-Control-Allow-Origin "*";
     add_header Access-Control-Allow-Methods "POST, GET, OPTIONS";
     add_header X-Content-Type-Options nosniff;
+
+    location ~* \.(js|css|eot|woff|woff2|ttf|svg|gif|jpeg|jpg|png|bmp|webp|swf|ico|mp4|ogg|ogv|ogm|webm)(\?|$) {
+      expires 30d;
+      include static_header_set.conf;
+      {{if .BUILD_VERSION}}add_header X-Build-Version "{{.BUILD_VERSION}}";{{end}}
+    }
   }
 
   # adapt set proxy_connection for http/websock
@@ -86,12 +109,6 @@ server {
   # > generate proxy configs (end)
   {{end}}
 
-  location ~* \.(js|css|eot|woff|woff2|ttf|svg|gif|jpeg|jpg|png|bmp|webp|swf|ico|mp4|ogg|ogv|ogm|webm)(\?|$) {
-    expires 30d;
-    include static_header_set.conf;
-    {{if .BUILD_VERSION}}add_header X-Build-Version "{{.BUILD_VERSION}}";{{end}}
-  }
-
   {{if .FSS_API_BASE}}
   location ^~ {{.FSS_API_BASE}} { try_files $uri @$http_upgrade; }
   {{end}}
@@ -122,6 +139,11 @@ server {
     proxy_cookie_path / /$x_proxy_cookie_flags;
     add_header Content-Type $api_content_type;
   }
+}
+
+map $http_x_forwarded_proto $x_forwarded_proto {
+  default $http_x_forwarded_proto;
+  ""      $scheme;
 }
 
 map $cookie_samesite_conditions $x_proxy_cookie_flags {

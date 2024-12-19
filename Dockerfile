@@ -64,6 +64,7 @@ ENV FSS_PROXY=
 ENV FSS_UPSTREAM=127.0.0.1:8709
 ENV FSS_HEADERS_CSP="script-src 'self' https://* http://* 'unsafe-eval' 'unsafe-inline' blob:; worker-src 'self' 'unsafe-inline' blob:;"
 ENV FSS_HEADERS_XSS_PROTECTION="1; mode=block"
+ENV FSS_CONTEXT_PATH=/
 
 # ref: [valid_referers](https://nginx.org/en/docs/http/ngx_http_referer_module.html#valid_referers)
 ENV FSS_VALID_REFERERS=
