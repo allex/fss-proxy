@@ -25,7 +25,7 @@ else
 fi
 
 USAGE="
-  --load-env load global env file: /.env
+  --load-env load global env file '/.env'. (This can also be set via \$FSS_LOAD_ENV)
   -x, --verbose trace for debug
   -d, --daemonize Run nginx as sysv daemon (in background)"
 
@@ -34,7 +34,7 @@ usage() {
   exit 0
 }
 
-load_env=
+load_env=${FSS_LOAD_ENV:-}
 runas_daemon=
 
 while test $# -ne 0
