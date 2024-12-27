@@ -80,7 +80,6 @@ ENV FSS_SVC_PREFIX=/svc/
 COPY --from=builder / /
 
 WORKDIR /var/www
-USER nginx
 
 EXPOSE ${FSS_PORT}
 ENTRYPOINT ["/sbin/fss-proxy.sh"]
