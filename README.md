@@ -36,6 +36,21 @@ $ docker run --rm --net host \
   -d tdio/fss-proxy:latest
 ```
 
+## ARGs
+
+Provide some `ONBUILD ARG` for base image building
+
+```sh
+# show build trace verbose (aka set -x)
+ARG BUILD_VERBOSE=false
+# build stamp of git commit
+ARG BUILD_GIT_HEAD
+# build version
+ARG BUILD_VERSION
+# adds dist.tgz to /var/www (with gzip extracting)
+ARG BUILD_ADD_DIST=true
+```
+
 ## Features
 
 ### custom proxy 
