@@ -3,7 +3,7 @@ ARG NGINX_VERSION=1.25.2
 
 FROM nginx:${NGINX_VERSION}-alpine AS builder
 
-COPY --from=tdio/envgod:1.1.3 /envgod /sbin/
+COPY --from=tdio/envgod:1.1.7 /envgod /sbin/
 
 RUN <<-'EOF'
   # cleanup and init configure
@@ -65,6 +65,7 @@ ENV FSS_UPSTREAM=127.0.0.1:8709
 ENV FSS_HEADERS_CSP="script-src 'self' https://* http://* 'unsafe-eval' 'unsafe-inline' blob:; worker-src 'self' 'unsafe-inline' blob:;"
 ENV FSS_HEADERS_XSS_PROTECTION="1; mode=block"
 ENV FSS_CONTEXT_PATH=/
+ENV FSS_FIX_HTTPS_COOKIE=true
 
 # ref: [valid_referers](https://nginx.org/en/docs/http/ngx_http_referer_module.html#valid_referers)
 ENV FSS_VALID_REFERERS=

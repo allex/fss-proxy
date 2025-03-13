@@ -17,7 +17,7 @@ server {
   error_page 497 =301 https://$host:$server_port$request_uri;
   {{end}}
 
-  {{if eq .FSS_FORCE_SSL "1"}}
+  {{if is_true .FSS_FORCE_SSL}}
   if ($x_forwarded_proto != "https") {
     return 301 https://$host:${FSS_SSL_PORT:-}$request_uri;
   }
@@ -25,32 +25,27 @@ server {
 
   access_log off;
 
-  location / {
+  location ${FSS_CONTEXT_PATH:-/} {
     include "proxy_set.conf";
-    proxy_pass http://unix:/tmp/n.sock:/;
+    proxy_pass http://unix:/tmp/fss-proxy.sock:/;
   }
-
-  {{if and .FSS_CONTEXT_PATH (ne .FSS_CONTEXT_PATH "/")}}
-  location ${FSS_CONTEXT_PATH} {
-    include "proxy_set.conf";
-    proxy_pass http://unix:/tmp/n.sock:/;
-  }
-  {{end}}
 }
 
 server {
-  listen unix:/tmp/n.sock;
+  listen unix:/tmp/fss-proxy.sock;
   charset UTF-8;
   root /var/www;
 
-  {{if eq .FSS_SPA "1"}}
+  {{if is_true .FSS_SPA}}
   index index.html;
   rewrite ^/*$ /index.html last;
   {{end}}
 
+  {{if is_true .FSS_FIX_HTTPS_COOKIE}}
   # patch backend cookie samesite flags
   set $cookie_samesite_conditions "";
   if ( $http_user_agent ~ "Chrome[^ \/]*\/[189][\d]+[\.\d]*" ) { set $cookie_samesite_conditions "${x_forwarded_proto}_Chrome_Adv"; }
+  {{end}}
 
   {{if .FSS_VALID_REFERERS}}
   # > build valid_referers
@@ -62,7 +57,7 @@ server {
 
   location / {
     if (-f $request_filename) { break; }
-    {{if eq .FSS_SPA "1"}}try_files $uri $uri/ $resource_path;
+    {{if is_true .FSS_SPA}}try_files $uri $uri/ $resource_path;
     {{else}}try_files $uri $uri/;{{end}}
     expires 30s;
     add_header X-Origin-Server $hostname;
@@ -92,7 +87,7 @@ server {
   location ^~ {{.path}} {
     include "proxy_set.conf";
     {{if ne .rewrite false}}
-    rewrite ^{{trimSuffix .path "/"}}/(?<rewrite_path>.+)$ /$1 break;
+    rewrite ^{{rtrim .path "/"}}/(?<rewrite_path>.+)$ /$1 break;
     {{end}}
     proxy_pass {{.target}};
     add_header X-Via "$upstream_addr";
@@ -136,24 +131,21 @@ server {
     proxy_intercept_errors on;
     add_header Cache-Control "no-cache, no-store, must-revalidate";
     add_header X-Via "$upstream_addr";
-    proxy_cookie_path / /$x_proxy_cookie_flags;
+    {{if is_true .FSS_FIX_HTTPS_COOKIE}}proxy_cookie_path / /$x_proxy_cookie_flags;{{end}}
     add_header Content-Type $api_content_type;
   }
 }
 
-map $http_x_forwarded_proto $x_forwarded_proto {
-  default $http_x_forwarded_proto;
-  ""      $scheme;
-}
-
+{{if is_true .FSS_FIX_HTTPS_COOKIE}}
 map $cookie_samesite_conditions $x_proxy_cookie_flags {
   default             "";
   "https_Chrome_Adv"  "; SameSite=None; Secure";
 }
+{{end}}
 
 map $uri $api_rewrite_url {
   default $uri;
-  {{if eq .FSS_REWRITE_API "1"}}
+  {{if is_true .FSS_REWRITE_API}}
   ~^{{.FSS_API_BASE}}(.*) /$1;
   {{else}}
   ~^{{.FSS_API_BASE}}.* $uri;
