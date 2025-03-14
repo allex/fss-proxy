@@ -92,10 +92,13 @@ ONBUILD ARG BUILD_VERBOSE=false
 ONBUILD ARG BUILD_GIT_HEAD
 ONBUILD ARG BUILD_VERSION
 ONBUILD ARG BUILD_ADD_DIST=true
+ONBUILD ARG USER=nginx
 ONBUILD ENV BUILD_GIT_HEAD=${BUILD_GIT_HEAD} BUILD_VERSION="${BUILD_VERSION}"
 ONBUILD LABEL version="${BUILD_VERSION}" gitref="${BUILD_GIT_HEAD}"
+ONBUILD USER ${USER}
 ONBUILD RUN --mount=type=bind,src=/,dst=/tmp/.build <<-'EOF'
 set -eu
+echo "Now running builder as $(whoami)"
 [ "${BUILD_VERBOSE:-}" = "true" ] && { printenv | sort; set -x; }
 [ "${BUILD_ADD_DIST:-}" = "true" ] || exit 0
 dst_file=/tmp/.build/dist.tgz
