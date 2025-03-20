@@ -25,9 +25,9 @@ else
 fi
 
 USAGE="
-  --load-env load global env file '/.env'. (This can also be set via \$FSS_LOAD_ENV)
-  -x, --verbose trace for debug
-  -d, --daemonize Run nginx as sysv daemon (in background)"
+  -x, --verbose   Enable trace for debug
+  -d, --daemonize Run nginx as system daemon (in background)
+  --load-env      Load environment variables from env file specified by \$FSS_ENV_FILE (can also be enabled via \$FSS_LOAD_ENV)"
 
 usage() {
   echo "Usage: $PROG $USAGE"
@@ -64,9 +64,10 @@ if is_true "${VERBOSE:-}"; then
 fi
 
 # load environment variables from /.env
-if is_true "$load_env" && test -f /.env; then
-  # shellcheck disable=SC1091
-  { set -a; . /.env; set +a; }
+env_file=${FSS_ENV_FILE:-/.env}
+if is_true "$load_env" && test -f "$env_file" ; then
+  # shellcheck disable=SC1090
+  { set -a; . "$env_file"; set +a; }
 fi
 
 if [ $# -eq 0 ]; then

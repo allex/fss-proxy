@@ -67,6 +67,12 @@ ENV FSS_HEADERS_XSS_PROTECTION="1; mode=block"
 ENV FSS_CONTEXT_PATH=/
 ENV FSS_FIX_HTTPS_COOKIE=true
 
+# Options for auto load env file
+# the `FSS_LOAD_ENV` can be set by `fss-proxy.sh --load-env` and the env file
+# path can be set by `FSS_ENV_FILE`, default is /.env
+ENV FSS_LOAD_ENV= \
+    FSS_ENV_FILE=
+
 # ref: [valid_referers](https://nginx.org/en/docs/http/ngx_http_referer_module.html#valid_referers)
 ENV FSS_VALID_REFERERS=
 
