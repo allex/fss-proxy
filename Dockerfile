@@ -5,6 +5,8 @@ FROM nginx:${NGINX_VERSION}-alpine AS builder
 
 COPY --from=tdio/envgod:1.1.7 /envgod /sbin/
 
+ENV nginx_dirs="/var/www/ /var/cache/nginx/ /var/log/nginx/ /etc/nginx/templates/ /etc/nginx/conf.d/ /etc/nginx/ssl"
+
 RUN <<-'EOF'
   # cleanup and init configure
   rm -rf /docker-entrypoint.d /docker-entrypoint.sh
@@ -24,11 +26,10 @@ RUN <<-'EOF'
   apk add --no-cache libcap && setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
 
   # add nginx to sudoers
-  mkdir -p /var/www /var/cache/nginx /var/log/nginx /etc/nginx/ssl
+  mkdir -p $nginx_dirs
   echo "nginx ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
   chmod 0440 /etc/sudoers
 
-  chown nginx.nginx -R /var/www/ /var/cache/nginx/ /var/log/nginx/ /etc/nginx/conf.d/ /etc/nginx/ssl
   rm -f /usr/sbin/nginx-debug
   rm -rf /tmp/*
 
@@ -36,6 +37,10 @@ RUN <<-'EOF'
 EOF
 
 ADD init.d /
+
+RUN <<-'EOF'
+  chown nginx.nginx -R $nginx_dirs
+EOF
 
 FROM scratch
 
