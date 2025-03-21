@@ -104,16 +104,23 @@ ONBUILD LABEL version="${BUILD_VERSION}" gitref="${BUILD_GIT_HEAD}"
 ONBUILD USER ${USER}
 ONBUILD RUN --mount=type=bind,src=/,dst=/tmp/.build <<-'EOF'
 set -eu
-echo "Now running builder as $(whoami)"
+log () { echo "[tdio/fss-proxy]: $*"; }
+log "Now running builder as $(whoami)"
 [ "${BUILD_VERBOSE:-}" = "true" ] && { printenv | sort; set -x; }
-[ "${BUILD_ADD_DIST:-}" = "true" ] || exit 0
 dst_file=/tmp/.build/dist.tgz
-[ -f "$dst_file" ] || exit 0
-[ -n "${BUILD_VERSION}" ] || { echo >&2 'fatal: "${BUILD_VERSION}" is required.'; exit 1; }
+if [ ! -f "$dst_file" ]; then
+	exit 0
+else
+	if [ "${BUILD_ADD_DIST:-}" = "false" ]; then
+		log "Skipping extraction of dist files as 'BUILD_ADD_DIST' is set to false."
+		exit 0
+	fi
+fi
+[ -n "${BUILD_VERSION}" ] || { log 'Error: "${BUILD_VERSION}" is required.'; exit 1; }
 (cd /var/www
 tar xzf "$dst_file"
 if [ -f ./index.html ]; then
 	echo "<!-- ${BUILD_VERSION##v} | ${BUILD_GIT_HEAD:-$(date +"%Y%m%d.%H%M%S")} -->" >> ./index.html
 fi)
-echo "build complete"
+log "Build complete."
 EOF
