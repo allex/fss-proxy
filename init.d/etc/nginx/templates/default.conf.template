@@ -6,40 +6,29 @@ upstream backend.srv {
 }
 
 server {
-  listen {{.FSS_PORT}};
+  {{ $bind_sock := printf "unix:/tmp/fss-proxy-%s.sock" uuid }}
   {{if .FSS_SERVER_NAME}}server_name $FSS_SERVER_NAME;{{end}}
+
+  listen {{$bind_sock}};
+  listen {{.FSS_PORT}};
 
   {{if .FSS_SSL_PORT}}
   listen {{.FSS_SSL_PORT}} ssl;
   http2 on;
   ssl_certificate ssl/tls.crt;
   ssl_certificate_key ssl/tls.key;
-  error_page 497 =301 https://$host:$server_port$request_uri;
+  error_page 497 =301 https://$http_host$request_uri;
   {{end}}
 
   {{if is_true .FSS_FORCE_SSL}}
   if ($x_forwarded_proto != "https") {
-    return 301 https://$host:${FSS_SSL_PORT:-}$request_uri;
+    return 301 https://$host:${FSS_SSL_PORT:-443}$request_uri;
   }
   {{end}}
 
-  access_log off;
-
-  location ${FSS_CONTEXT_PATH:-/} {
-    include "proxy_set.conf";
-    proxy_pass http://unix:/tmp/fss-proxy.sock:/;
-  }
-}
-
-server {
-  listen unix:/tmp/fss-proxy.sock;
   charset UTF-8;
   root /var/www;
-
-  {{if is_true .FSS_SPA}}
   index index.html;
-  rewrite ^/*$ /index.html last;
-  {{end}}
 
   {{if is_true .FSS_FIX_HTTPS_COOKIE}}
   # patch backend cookie samesite flags
@@ -55,10 +44,29 @@ server {
   }
   {{end}}
 
+  {{ $with_context_path := and .FSS_CONTEXT_PATH (ne .FSS_CONTEXT_PATH "/") }}
+
+  {{if $with_context_path}}
+  set $context_path "{{rtrim .FSS_CONTEXT_PATH "/"}}";
+  location ${FSS_CONTEXT_PATH} {
+    access_log off;
+    include "proxy_set.conf";
+    proxy_set_header X-Internal-Proxy "1";
+    proxy_pass http://{{$bind_sock}}:/;
+  }
+  {{end}}
+
   location / {
+    {{if $with_context_path}}
+    # Redirect direct external access to context path when configured
+    # Allow internal proxy requests (with X-Internal-Proxy header)
+    if ($http_x_internal_proxy != "1") { return 301 $context_path$request_uri; }
+    {{end}}
+
     if (-f $request_filename) { break; }
     {{if is_true .FSS_SPA}}try_files $uri $uri/ $resource_path;
     {{else}}try_files $uri $uri/;{{end}}
+
     expires 30s;
     add_header X-Origin-Server $hostname;
     {{if .FSS_HEADERS_CSP}}add_header Content-Security-Policy "{{.FSS_HEADERS_CSP}}";{{end}}
@@ -69,6 +77,9 @@ server {
     add_header X-Content-Type-Options nosniff;
 
     location ~* \.(js|css|eot|woff|woff2|ttf|svg|gif|jpeg|jpg|png|bmp|webp|swf|ico|mp4|ogg|ogv|ogm|webm)(\?|$) {
+      {{if $with_context_path}}
+      if ($http_x_internal_proxy != "1") { return 301 $context_path$request_uri; }
+      {{end}}
       expires 30d;
       include static_header_set.conf;
       {{if .BUILD_VERSION}}add_header X-Build-Version "{{.BUILD_VERSION}}";{{end}}

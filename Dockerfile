@@ -3,7 +3,7 @@ ARG NGINX_VERSION=1.25.2
 
 FROM nginx:${NGINX_VERSION}-alpine AS builder
 
-COPY --from=tdio/envgod:1.1.7 /envgod /sbin/
+COPY --from=tdio/envgod:1.1.8 /envgod /sbin/
 
 ENV nginx_dirs="/var/www/ /var/cache/nginx/ /var/log/nginx/ /etc/nginx/templates/ /etc/nginx/conf.d/ /etc/nginx/ssl"
 

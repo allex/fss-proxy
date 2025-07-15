@@ -2,6 +2,7 @@
 #by @allex_wang
 
 set -e
+set -o pipefail
 
 ME=$(basename "$0")
 
